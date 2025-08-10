@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import MenuItem from './MenuItem';
 import OrderSummary from './OrderSummary';
+import CheckoutModal from './CheckoutModal';
 import { getImageByDishName } from './menuImages';
 import './Menu.css';
 
 const Menu = () => {
   const [activeCategory, setActiveCategory] = useState('comidas-rapidas');
   const [order, setOrder] = useState([]);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
 
   // Datos del menú organizados por categorías
   const menuData = {
@@ -16,14 +18,14 @@ const Menu = () => {
         name: 'Hamburguesa Clásica',
         description: 'Hamburguesa de res con lechuga, tomate, cebolla y queso cheddar',
         price: 8.99,
-        image: getImageByDishName('Hot Dog Gourmet')
+        image: getImageByDishName('Filete de Res')
       },
       {
         id: 2,
         name: 'Nachos Supremos',
         description: 'Tortilla chips con queso fundido, jalapeños, guacamole y sour cream',
         price: 6.99,
-        image: getImageByDishName('Hot Dog Gourmet')
+        image: getImageByDishName('Pasta Carbonara')
       },
       {
         id: 3,
@@ -46,7 +48,7 @@ const Menu = () => {
         name: 'Filete de Res',
         description: 'Filete de res a la parrilla con vegetales asados y puré de papas',
         price: 24.99,
-        image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop'
+        image: getImageByDishName('Filete de Res')
       },
       {
         id: 6,
@@ -67,7 +69,7 @@ const Menu = () => {
         name: 'Salmón Asado',
         description: 'Filete de salmón con costra de hierbas y vegetales de temporada',
         price: 22.99,
-        image: getImageByDishName('Hot Dog Gourmet')
+        image: getImageByDishName('Pollo a la Plancha')
       }
     ],
     'bebidas': [
@@ -90,14 +92,14 @@ const Menu = () => {
         name: 'Café Americano',
         description: 'Café negro preparado con granos premium de origen único',
         price: 2.99,
-        image: getImageByDishName('Hot Dog Gourmet')
+        image: getImageByDishName('Café Americano')
       },
       {
         id: 12,
         name: 'Té Helado',
         description: 'Té negro helado con limón y menta, endulzado naturalmente',
         price: 3.49,
-        image: getImageByDishName('Hot Dog Gourmet')
+        image: getImageByDishName('Té Helado')
       }
     ]
   };
@@ -140,9 +142,44 @@ const Menu = () => {
 
   const handleCheckout = () => {
     if (order.length > 0) {
-      alert('¡Gracias por tu pedido! Pronto estará listo.');
-      setOrder([]);
+      setIsCheckoutModalOpen(true);
     }
+  };
+
+  const handleCheckoutConfirm = (checkoutData) => {
+    // Crear un resumen del pedido con comentarios
+    const orderSummary = order.map(item => {
+      let summary = `${item.name} x${item.quantity}`;
+      if (item.comments && item.comments.trim()) {
+        summary += ` - ${item.comments}`;
+      }
+      return summary;
+    }).join('\n');
+
+    const message = `¡Pedido confirmado!\n\nCliente: ${checkoutData.customerName}\nMesa: ${checkoutData.tableNumber}\n\nResumen:\n${orderSummary}\n\nPronto estará listo.`;
+    alert(message);
+    
+    // Cerrar el modal y limpiar el pedido
+    setIsCheckoutModalOpen(false);
+    setOrder([]);
+  };
+
+  const handleCheckoutCancel = () => {
+    setIsCheckoutModalOpen(false);
+  };
+
+  const handleRemoveItem = (itemId) => {
+    setOrder(prevOrder => prevOrder.filter(item => item.id !== itemId));
+  };
+
+  const handleUpdateComments = (itemId, comments) => {
+    setOrder(prevOrder => 
+      prevOrder.map(item => 
+        item.id === itemId 
+          ? { ...item, comments } 
+          : item
+      )
+    );
   };
 
   return (
@@ -178,6 +215,15 @@ const Menu = () => {
         order={order}
         onClearOrder={handleClearOrder}
         onCheckout={handleCheckout}
+        onRemoveItem={handleRemoveItem}
+        onUpdateComments={handleUpdateComments}
+      />
+
+      <CheckoutModal
+        isOpen={isCheckoutModalOpen}
+        onClose={handleCheckoutCancel}
+        onConfirm={handleCheckoutConfirm}
+        order={order}
       />
     </div>
   );

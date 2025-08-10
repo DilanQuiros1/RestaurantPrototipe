@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Button from '../../components/common/Button';
 
-const OrderSummary = ({ order, onClearOrder, onCheckout }) => {
+const OrderSummary = ({ order, onClearOrder, onCheckout, onRemoveItem, onUpdateComments }) => {
+  const [showComments, setShowComments] = useState({});
   const totalItems = order.reduce((sum, item) => sum + item.quantity, 0);
   const totalAmount = order.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  const toggleComments = (itemId) => {
+    setShowComments(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }));
+  };
 
   if (order.length === 0) {
     return (
@@ -29,20 +37,44 @@ const OrderSummary = ({ order, onClearOrder, onCheckout }) => {
       
       <div className="order-items">
         {order.map((item, index) => (
-          <div key={item.uniqueId || index} className="order-item">
-            <div className="order-item-details">
+          <div key={index} className="order-item">
+            <div className="order-item-main">
               <span className="order-item-name">
                 {item.name} x{item.quantity}
               </span>
-              {item.comments && (
-                <span className="order-item-comments">
-                  📝 {item.comments}
+              <div className="order-item-actions">
+                <span className="order-item-price">
+                  ${(item.price * item.quantity).toFixed(2)}
                 </span>
+                <button 
+                  className="remove-item-btn"
+                  onClick={() => onRemoveItem(item.id)}
+                  title="Eliminar item"
+                >
+                  🗑️
+                </button>
+              </div>
+            </div>
+            
+            <div className="order-item-comments">
+              <button
+                className="add-comment-btn"
+                onClick={() => toggleComments(item.id)}
+                type="button"
+              >
+                {showComments[item.id] ? 'Ocultar Comentario' : 'Agregar Comentario'}
+              </button>
+              
+              {showComments[item.id] && (
+                <textarea
+                  className="comments-input"
+                  placeholder="Agregar comentarios (ej: sin lechuga, sin salsas, bien cocido...)"
+                  value={item.comments || ''}
+                  onChange={(e) => onUpdateComments(item.id, e.target.value)}
+                  rows="2"
+                />
               )}
             </div>
-            <span className="order-item-price">
-              ${(item.price * item.quantity).toFixed(2)}
-            </span>
           </div>
         ))}
       </div>
