@@ -29,10 +29,17 @@ const OrderSummary = ({ order, onClearOrder, onCheckout }) => {
       
       <div className="order-items">
         {order.map((item, index) => (
-          <div key={index} className="order-item">
-            <span className="order-item-name">
-              {item.name} x{item.quantity}
-            </span>
+          <div key={item.uniqueId || index} className="order-item">
+            <div className="order-item-details">
+              <span className="order-item-name">
+                {item.name} x{item.quantity}
+              </span>
+              {item.comments && (
+                <span className="order-item-comments">
+                  📝 {item.comments}
+                </span>
+              )}
+            </div>
             <span className="order-item-price">
               ${(item.price * item.quantity).toFixed(2)}
             </span>

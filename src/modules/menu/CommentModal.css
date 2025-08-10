@@ -1,0 +1,330 @@
+/* Estilos para el modal de comentarios */
+
+.comment-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.comment-modal {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header del modal */
+.comment-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 30px 20px;
+  border-bottom: 2px solid #f8f9fa;
+  position: sticky;
+  top: 0;
+  background: white;
+  border-radius: 20px 20px 0 0;
+}
+
+.comment-modal-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: #f8f9fa;
+  color: #666;
+}
+
+/* Contenido del modal */
+.comment-modal-content {
+  padding: 20px 30px;
+}
+
+/* Información del producto seleccionado */
+.selected-item-info {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 15px;
+  margin-bottom: 25px;
+}
+
+.modal-item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.modal-item-details {
+  flex: 1;
+}
+
+.modal-item-details h4 {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.modal-item-description {
+  margin: 0 0 10px 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.modal-item-price {
+  font-weight: 700;
+  color: #ff6b6b;
+  font-size: 1.1rem;
+}
+
+/* Sección de cantidad */
+.quantity-section {
+  margin-bottom: 25px;
+}
+
+.quantity-section label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #333;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quantity-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-btn:hover {
+  background: #5a6fd8;
+  transform: translateY(-1px);
+}
+
+.quantity-input {
+  width: 80px;
+  height: 40px;
+  text-align: center;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.quantity-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* Sección de sugerencias */
+.suggestions-section {
+  margin-bottom: 25px;
+}
+
+.suggestions-section label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.suggestions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.suggestion-chip {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-weight: 500;
+}
+
+.suggestion-chip:hover {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+  transform: translateY(-1px);
+}
+
+/* Sección de comentarios */
+.comment-section {
+  margin-bottom: 25px;
+}
+
+.comment-section label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #333;
+}
+
+.comment-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.comment-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.comment-textarea::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.character-count {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Total */
+.modal-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.total-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.total-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #28a745;
+}
+
+/* Acciones del modal */
+.comment-modal-actions {
+  display: flex;
+  gap: 15px;
+  padding: 20px 30px 30px;
+  justify-content: flex-end;
+  border-top: 2px solid #f8f9fa;
+}
+
+.comment-modal-actions .btn {
+  min-width: 120px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .comment-modal {
+    width: 95%;
+    margin: 10px;
+  }
+  
+  .comment-modal-header,
+  .comment-modal-content,
+  .comment-modal-actions {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  
+  .selected-item-info {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .modal-item-image {
+    align-self: center;
+  }
+  
+  .suggestions-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+  
+  .comment-modal-actions {
+    flex-direction: column;
+  }
+  
+  .comment-modal-actions .btn {
+    width: 100%;
+  }
+}

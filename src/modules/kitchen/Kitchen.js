@@ -21,8 +21,18 @@ const Kitchen = () => {
       id: 1,
       tableNumber: 5,
       items: [
-        { name: 'Hamburguesa Clásica', quantity: 2, preparationTime: 15 },
-        { name: 'Limonada Natural', quantity: 2, preparationTime: 3 }
+        { 
+          name: 'Hamburguesa Clásica', 
+          quantity: 2, 
+          preparationTime: 15,
+          comments: 'Sin cebolla, extra queso'
+        },
+        { 
+          name: 'Limonada Natural', 
+          quantity: 2, 
+          preparationTime: 3,
+          comments: 'Sin azúcar'
+        }
       ],
       status: ORDER_STATES.PENDING,
       orderTime: new Date(Date.now() - 10 * 60000), // Hace 10 minutos
@@ -34,8 +44,18 @@ const Kitchen = () => {
       id: 2,
       tableNumber: 3,
       items: [
-        { name: 'Filete de Res', quantity: 1, preparationTime: 25 },
-        { name: 'Café Americano', quantity: 1, preparationTime: 2 }
+        { 
+          name: 'Filete de Res', 
+          quantity: 1, 
+          preparationTime: 25,
+          comments: 'Término medio, sin sal'
+        },
+        { 
+          name: 'Café Americano', 
+          quantity: 1, 
+          preparationTime: 2,
+          comments: null
+        }
       ],
       status: ORDER_STATES.IN_PROGRESS,
       orderTime: new Date(Date.now() - 5 * 60000), // Hace 5 minutos
@@ -48,8 +68,18 @@ const Kitchen = () => {
       id: 3,
       tableNumber: 8,
       items: [
-        { name: 'Pizza Margherita', quantity: 1, preparationTime: 20 },
-        { name: 'Smoothie de Frutas', quantity: 2, preparationTime: 5 }
+        { 
+          name: 'Pizza Margherita', 
+          quantity: 1, 
+          preparationTime: 20,
+          comments: 'Extra albahaca, masa delgada'
+        },
+        { 
+          name: 'Smoothie de Frutas', 
+          quantity: 2, 
+          preparationTime: 5,
+          comments: 'Sin miel, con yogurt extra'
+        }
       ],
       status: ORDER_STATES.READY,
       orderTime: new Date(Date.now() - 25 * 60000), // Hace 25 minutos

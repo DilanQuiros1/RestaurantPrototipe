@@ -80,9 +80,17 @@ const OrderCard = ({ order, onUpdateStatus, allowedActions }) => {
       <div className="order-items">
         {order.items.map((item, index) => (
           <div key={index} className="order-item">
-            <span className="item-quantity">{item.quantity}x</span>
-            <span className="item-name">{item.name}</span>
-            <span className="item-time">({item.preparationTime}min)</span>
+            <div className="item-main-info">
+              <span className="item-quantity">{item.quantity}x</span>
+              <span className="item-name">{item.name}</span>
+              <span className="item-time">({item.preparationTime}min)</span>
+            </div>
+            {item.comments && (
+              <div className="item-comments">
+                <span className="comments-icon">📝</span>
+                <span className="comments-text">{item.comments}</span>
+              </div>
+            )}
           </div>
         ))}
       </div>

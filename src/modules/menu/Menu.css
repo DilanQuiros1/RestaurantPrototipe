@@ -169,9 +169,16 @@
 .order-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
+  align-items: flex-start;
+  padding: 12px 0;
   border-bottom: 1px solid #ecf0f1;
+}
+
+.order-item-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .order-item-name {
@@ -179,9 +186,21 @@
   color: #2c3e50;
 }
 
+.order-item-comments {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  font-style: italic;
+  background: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border-left: 3px solid #3498db;
+}
+
 .order-item-price {
   color: #e74c3c;
   font-weight: 600;
+  margin-left: 10px;
+  align-self: flex-start;
 }
 
 .order-total {

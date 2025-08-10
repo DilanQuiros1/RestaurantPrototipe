@@ -212,15 +212,19 @@
 }
 
 .order-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   padding: 8px 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
 .order-item:last-child {
   border-bottom: none;
+}
+
+.item-main-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
 }
 
 .item-quantity {
@@ -244,6 +248,29 @@
   color: #666;
   font-size: 0.85rem;
   font-style: italic;
+}
+
+.item-comments {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 45px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-top: 5px;
+}
+
+.comments-icon {
+  font-size: 0.8rem;
+}
+
+.comments-text {
+  font-size: 0.85rem;
+  color: #856404;
+  font-style: italic;
+  font-weight: 500;
 }
 
 /* Información de tiempo */
