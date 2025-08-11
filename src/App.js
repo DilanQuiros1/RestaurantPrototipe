@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Menu } from './modules/menu';
 import { Kitchen } from './modules/kitchen';
+import { Administration } from './modules/administration';
 import './App.css';
 
 function App() {
@@ -14,6 +15,8 @@ function App() {
         return <Menu />;
       case 'kitchen':
         return <Kitchen />;
+      case 'administration':
+        return <Administration />;
       default:
         return <Menu />;
     }
@@ -21,20 +24,37 @@ function App() {
 
   return (
     <div className="App">
-      {/* Navegación simple entre módulos */}
+      {/* Navegación principal entre módulos */}
       <nav className="app-navigation">
-        <button 
-          className={`nav-button ${currentView === 'menu' ? 'active' : ''}`}
-          onClick={() => setCurrentView('menu')}
-        >
-          🍽️ Menú Cliente
-        </button>
-        <button 
-          className={`nav-button ${currentView === 'kitchen' ? 'active' : ''}`}
-          onClick={() => setCurrentView('kitchen')}
-        >
-          🍳 Cocina
-        </button>
+        <div className="nav-brand">
+          <h1>🍽️ RestaurantApp</h1>
+        </div>
+        
+        <div className="nav-buttons">
+          <button 
+            className={`nav-button ${currentView === 'menu' ? 'active' : ''}`}
+            onClick={() => setCurrentView('menu')}
+          >
+            <span className="nav-icon">👥</span>
+            <span className="nav-label">Menú Cliente</span>
+          </button>
+          
+          <button 
+            className={`nav-button ${currentView === 'kitchen' ? 'active' : ''}`}
+            onClick={() => setCurrentView('kitchen')}
+          >
+            <span className="nav-icon">🍳</span>
+            <span className="nav-label">Cocina</span>
+          </button>
+          
+          <button 
+            className={`nav-button ${currentView === 'administration' ? 'active' : ''}`}
+            onClick={() => setCurrentView('administration')}
+          >
+            <span className="nav-icon">⚙️</span>
+            <span className="nav-label">Administración</span>
+          </button>
+        </div>
       </nav>
 
       {/* Contenido principal */}
