@@ -4,6 +4,32 @@
   padding: 20px;
   background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   min-height: 100vh;
+  position: relative;
+}
+
+/* Botón discreto de administración */
+.admin-access-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.admin-access-btn:hover {
+  background: rgba(102, 126, 234, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .menu-header {
@@ -14,6 +40,7 @@
   border-radius: 20px;
   color: white;
   box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  position: relative;
 }
 
 .menu-title {
@@ -27,6 +54,36 @@
   font-size: 1.2rem;
   opacity: 0.9;
   font-weight: 300;
+  margin-bottom: 20px;
+}
+
+/* Botón Llamar Mesero */
+.call-waiter-btn {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  margin-top: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.call-waiter-btn:hover {
+  background: linear-gradient(135deg, #ee5a52, #dc4c64);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.call-waiter-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
 }
 
 .categories-container {

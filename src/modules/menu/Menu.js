@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import MenuItem from './MenuItem';
 import OrderSummary from './OrderSummary';
 import CheckoutModal from './CheckoutModal';
+import AdminLoginModal from './AdminLoginModal';
+import WaiterCallModal from './WaiterCallModal';
 import { getImageByDishName } from './menuImages';
 import './Menu.css';
 
-const Menu = () => {
+const Menu = ({ onAdminAccess }) => {
   const [activeCategory, setActiveCategory] = useState('comidas-rapidas');
   const [order, setOrder] = useState([]);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
+  const [isWaiterCallOpen, setIsWaiterCallOpen] = useState(false);
 
   // Datos del menú organizados por categorías
   const menuData = {
@@ -172,11 +176,49 @@ const Menu = () => {
     );
   };
 
+  const handleAdminLogin = () => {
+    setIsAdminLoginOpen(false);
+    if (onAdminAccess) {
+      onAdminAccess();
+    }
+  };
+
+  const handleWaiterCall = (callData) => {
+    // En un caso real, esto enviaría la notificación al sistema de cocina/administración
+    const message = `🔔 LLAMADA DE MESERO\n\n` +
+      `📍 Mesa: ${callData.tableNumber}\n` +
+      `📋 Motivo: ${callData.reasonLabel}\n` +
+      `🕐 Hora: ${callData.timestamp}\n` +
+      (callData.message ? `💬 Mensaje: ${callData.message}\n` : '') +
+      `\n✅ Notificación enviada a cocina.\nEl mesero se dirigirá a tu mesa pronto.`;
+    
+    alert(message);
+    console.log('Llamada de mesero enviada:', callData);
+  };
+
   return (
     <div className="menu-container">
+      {/* Botón discreto de administración */}
+      <button 
+        className="admin-access-btn"
+        onClick={() => setIsAdminLoginOpen(true)}
+        title="Acceso Administrativo"
+      >
+        ⚙️
+      </button>
+
       <div className="menu-header">
         <h1 className="menu-title">🍽️ Nuestro Menú</h1>
         <p className="menu-subtitle">Descubre los sabores que te harán volver por más</p>
+        
+        {/* Botón Llamar Mesero */}
+        <button 
+          className="call-waiter-btn"
+          onClick={() => setIsWaiterCallOpen(true)}
+          title="Solicitar atención del mesero"
+        >
+          🔔 Llamar Mesero
+        </button>
       </div>
 
       <div className="categories-container">
@@ -214,6 +256,18 @@ const Menu = () => {
         onClose={handleCheckoutCancel}
         onConfirm={handleCheckoutConfirm}
         order={order}
+      />
+
+      <AdminLoginModal
+        isOpen={isAdminLoginOpen}
+        onClose={() => setIsAdminLoginOpen(false)}
+        onLogin={handleAdminLogin}
+      />
+
+      <WaiterCallModal
+        isOpen={isWaiterCallOpen}
+        onClose={() => setIsWaiterCallOpen(false)}
+        onCallWaiter={handleWaiterCall}
       />
     </div>
   );
