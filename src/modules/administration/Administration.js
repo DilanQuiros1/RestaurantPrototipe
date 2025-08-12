@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import MenuManagement from './MenuManagement';
 import TableManagement from './TableManagement';
+import Cashier from '../cashier/Cashier';
 import './Administration.css';
 
 const Administration = () => {
@@ -8,7 +9,8 @@ const Administration = () => {
 
   const tabs = [
     { id: 'menu', label: 'Gestión de Menú', icon: '🍽️' },
-    { id: 'tables', label: 'Gestión de Mesas', icon: '🪑' }
+    { id: 'tables', label: 'Gestión de Mesas', icon: '🪑' },
+    { id: 'cashier', label: 'Caja', icon: '💳' }
   ];
 
   return (
@@ -34,6 +36,7 @@ const Administration = () => {
       <div className="administration-content">
         {activeTab === 'menu' && <MenuManagement />}
         {activeTab === 'tables' && <TableManagement />}
+        {activeTab === 'cashier' && <Cashier />}
       </div>
     </div>
   );
