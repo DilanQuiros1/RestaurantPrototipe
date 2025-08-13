@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../../components/common/Button';
+import { menuImages, getImageByDishName } from '../menu/menuImages';
 import './ProductModal.css';
 
 const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
@@ -9,7 +10,8 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
     price: '',
     category: 'comidas-rapidas',
     ingredients: [''],
-    image: '🍽️'
+    image: 'Filete de Res',
+    preparationTime: 15
   });
 
   const [errors, setErrors] = useState({});
@@ -22,7 +24,35 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
     { id: 'entradas', label: 'Entradas' }
   ];
 
-  const emojis = ['🍽️', '🍔', '🥩', '🍕', '🍝', '🥗', '🍜', '🍣', '🍱', '🥘', '🍲', '🥪', '🌮', '🌯', '🥤', '☕', '🍺', '🍷', '🍰', '🍦', '🍪', '🍩'];
+  // Lista de imágenes disponibles organizadas por categoría
+  const availableImages = {
+    'comidas-rapidas': [
+      { key: 'Hamburguesa Clásica', name: 'Hamburguesa Clásica' },
+      { key: 'Nachos Supremos', name: 'Nachos Supremos' },
+      { key: 'Pizza Margherita', name: 'Pizza Margherita' },
+      { key: 'Hot Dog Gourmet', name: 'Hot Dog Gourmet' }
+    ],
+    'platos-fuertes': [
+      { key: 'Filete de Res', name: 'Filete de Res' },
+      { key: 'Pollo a la Plancha', name: 'Pollo a la Plancha' },
+      { key: 'Pasta Carbonara', name: 'Pasta Carbonara' },
+      { key: 'Salmón Asado', name: 'Salmón Asado' }
+    ],
+    'bebidas': [
+      { key: 'Limonada Natural', name: 'Limonada Natural' },
+      { key: 'Smoothie de Frutas', name: 'Smoothie de Frutas' },
+      { key: 'Café Americano', name: 'Café Americano' },
+      { key: 'Té Helado', name: 'Té Helado' }
+    ],
+    'postres': [
+      { key: 'Filete de Res', name: 'Imagen Genérica 1' },
+      { key: 'Pasta Carbonara', name: 'Imagen Genérica 2' }
+    ],
+    'entradas': [
+      { key: 'Filete de Res', name: 'Imagen Genérica 1' },
+      { key: 'Pasta Carbonara', name: 'Imagen Genérica 2' }
+    ]
+  };
 
   useEffect(() => {
     if (product) {
@@ -32,7 +62,8 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
         price: product.price || '',
         category: product.category || 'comidas-rapidas',
         ingredients: product.ingredients || [''],
-        image: product.image || '🍽️'
+        image: product.image || 'Filete de Res',
+        preparationTime: product.preparationTime || 15
       });
     } else {
       setFormData({
@@ -41,7 +72,8 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
         price: '',
         category: 'comidas-rapidas',
         ingredients: [''],
-        image: '🍽️'
+        image: 'Filete de Res',
+        preparationTime: 15
       });
     }
     setErrors({});
@@ -62,6 +94,10 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
       newErrors.price = 'El precio debe ser mayor a 0';
     }
 
+    if (!formData.preparationTime || formData.preparationTime <= 0) {
+      newErrors.preparationTime = 'El tiempo de preparación debe ser mayor a 0';
+    }
+
     if (formData.ingredients.length === 0 || formData.ingredients[0].trim() === '') {
       newErrors.ingredients = 'Al menos un ingrediente es requerido';
     }
@@ -78,6 +114,7 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
+        preparationTime: parseInt(formData.preparationTime),
         ingredients: cleanIngredients
       };
       onSave(productData);
@@ -127,18 +164,34 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
 
         <form onSubmit={handleSubmit} className="product-form">
           <div className="form-group">
-            <label htmlFor="image">Emoji del Producto</label>
-            <div className="emoji-selector">
-              {emojis.map((emoji, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  className={`emoji-option ${formData.image === emoji ? 'selected' : ''}`}
-                  onClick={() => handleInputChange('image', emoji)}
-                >
-                  {emoji}
-                </button>
-              ))}
+            <label htmlFor="image">Imagen del Producto</label>
+            <div className="image-selector">
+              <div className="current-image">
+                <img 
+                  src={getImageByDishName(formData.image)} 
+                  alt="Imagen actual"
+                  className="preview-image"
+                />
+                <span className="image-name">{formData.image}</span>
+              </div>
+              <div className="image-options">
+                {availableImages[formData.category]?.map((imageOption, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    className={`image-option ${formData.image === imageOption.key ? 'selected' : ''}`}
+                    onClick={() => handleInputChange('image', imageOption.key)}
+                    title={imageOption.name}
+                  >
+                    <img 
+                      src={getImageByDishName(imageOption.key)} 
+                      alt={imageOption.name}
+                      className="option-image"
+                    />
+                    <span className="option-name">{imageOption.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -187,6 +240,26 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
               {errors.price && <span className="error-message">{errors.price}</span>}
             </div>
 
+            <div className="form-group">
+              <label htmlFor="preparationTime">Tiempo de Preparación (minutos) *</label>
+              <div className="time-input">
+                <input
+                  type="number"
+                  id="preparationTime"
+                  value={formData.preparationTime}
+                  onChange={(e) => handleInputChange('preparationTime', e.target.value)}
+                  className={errors.preparationTime ? 'error' : ''}
+                  placeholder="15"
+                  min="1"
+                  max="120"
+                />
+                <span className="time-unit">min</span>
+              </div>
+              {errors.preparationTime && <span className="error-message">{errors.preparationTime}</span>}
+            </div>
+          </div>
+
+          <div className="form-row">
             <div className="form-group">
               <label htmlFor="category">Categoría</label>
               <select

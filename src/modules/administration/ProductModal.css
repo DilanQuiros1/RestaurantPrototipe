@@ -288,6 +288,103 @@
   }
 }
 
+/* Selector de imágenes */
+.image-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.current-image {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  background: #f8f9fa;
+}
+
+.preview-image {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-name {
+  font-weight: 600;
+  color: #495057;
+}
+
+.image-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.image-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.image-option:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.image-option.selected {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #667eea10, #764ba210);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.option-image {
+  width: 60px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.option-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #495057;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Campo de tiempo de preparación */
+.time-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.time-input input {
+  padding-right: 50px;
+}
+
+.time-unit {
+  position: absolute;
+  right: 15px;
+  color: #6c757d;
+  font-weight: 500;
+  pointer-events: none;
+}
+
 @media (max-width: 480px) {
   .modal-header {
     padding: 15px 20px;
@@ -305,5 +402,23 @@
   .emoji-option {
     min-height: 40px;
     font-size: 1.2rem;
+  }
+
+  .image-options {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+  }
+
+  .image-option {
+    padding: 8px;
+  }
+
+  .option-image {
+    width: 50px;
+    height: 38px;
+  }
+
+  .option-name {
+    font-size: 0.7rem;
   }
 }

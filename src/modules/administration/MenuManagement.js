@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../../components/common/Button';
 import ProductModal from './ProductModal';
+import menuService from '../../services/menuService';
+import { getImageByDishName } from '../menu/menuImages';
 import './MenuManagement.css';
 
 const MenuManagement = () => {
@@ -9,42 +11,15 @@ const MenuManagement = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
 
-  // Datos de ejemplo - en un caso real vendrían de una API
+  // Cargar productos desde el servicio
   useEffect(() => {
-    const initialProducts = [
-      {
-        id: 1,
-        name: 'Hamburguesa Clásica',
-        description: 'Hamburguesa de res con lechuga, tomate, cebolla y queso cheddar',
-        price: 8.99,
-        category: 'comidas-rapidas',
-        ingredients: ['Pan de hamburguesa', 'Carne de res', 'Lechuga', 'Tomate', 'Cebolla', 'Queso cheddar'],
-        image: '🍔',
-        isVisible: true
-      },
-      {
-        id: 2,
-        name: 'Filete de Res',
-        description: 'Filete de res a la parrilla con vegetales asados y puré de papas',
-        price: 24.99,
-        category: 'platos-fuertes',
-        ingredients: ['Filete de res', 'Vegetales asados', 'Puré de papas', 'Salsa de vino'],
-        image: '🥩',
-        isVisible: true
-      },
-      {
-        id: 3,
-        name: 'Limonada Natural',
-        description: 'Limonada fresca preparada con limones orgánicos y menta',
-        price: 3.99,
-        category: 'bebidas',
-        ingredients: ['Limones', 'Menta', 'Azúcar', 'Agua'],
-        image: '🍋',
-        isVisible: true
-      }
-    ];
-    setProducts(initialProducts);
+    loadProducts();
   }, []);
+
+  const loadProducts = () => {
+    const allItems = menuService.getAllItems();
+    setProducts(allItems);
+  };
 
   const categories = [
     { id: 'all', label: 'Todos los productos', icon: '📋' },
@@ -69,31 +44,33 @@ const MenuManagement = () => {
 
   const handleDeleteProduct = (productId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      setProducts(products.filter(p => p.id !== productId));
+      menuService.permanentlyDeleteItem(productId);
+      loadProducts(); // Recargar lista
     }
   };
 
   const handleToggleVisibility = (productId) => {
-    setProducts(products.map(p => 
-      p.id === productId ? { ...p, isVisible: !p.isVisible } : p
-    ));
+    const product = menuService.getItemById(productId);
+    if (product) {
+      menuService.updateItem(productId, { isVisible: !product.isVisible });
+      loadProducts(); // Recargar lista
+    }
+  };
+
+  const handleToggleAvailability = (productId) => {
+    menuService.toggleItemAvailability(productId);
+    loadProducts(); // Recargar lista
   };
 
   const handleSaveProduct = (productData) => {
     if (editingProduct) {
       // Editar producto existente
-      setProducts(products.map(p => 
-        p.id === editingProduct.id ? { ...productData, id: editingProduct.id } : p
-      ));
+      menuService.updateItem(editingProduct.id, productData);
     } else {
       // Agregar nuevo producto
-      const newProduct = {
-        ...productData,
-        id: Date.now(),
-        isVisible: true
-      };
-      setProducts([...products, newProduct]);
+      menuService.addItem(productData);
     }
+    loadProducts(); // Recargar lista
     setIsModalOpen(false);
     setEditingProduct(null);
   };
@@ -103,6 +80,13 @@ const MenuManagement = () => {
     setEditingProduct(null);
   };
 
+  const handleResetMenu = () => {
+    if (window.confirm('¿Estás seguro de que quieres resetear el menú a los valores originales? Esto eliminará todos los cambios.')) {
+      menuService.resetToOriginal();
+      loadProducts();
+    }
+  };
+
   return (
     <div className="menu-management">
       <div className="menu-management-header">
@@ -110,13 +94,22 @@ const MenuManagement = () => {
           <h2>Gestión de Menú</h2>
           <p>Administra los productos de tu menú</p>
         </div>
-        <Button 
-          variant="primary" 
-          onClick={handleAddProduct}
-          className="add-product-btn"
-        >
-          ➕ Agregar Producto
-        </Button>
+        <div className="header-actions">
+          <Button 
+            variant="secondary" 
+            onClick={handleResetMenu}
+            className="reset-menu-btn"
+          >
+            🔄 Resetear Menú
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleAddProduct}
+            className="add-product-btn"
+          >
+            ➕ Agregar Producto
+          </Button>
+        </div>
       </div>
 
       <div className="category-filters">
@@ -136,8 +129,21 @@ const MenuManagement = () => {
         {filteredProducts.map(product => (
           <div key={product.id} className={`product-card ${!product.isVisible ? 'invisible' : ''}`}>
             <div className="product-header">
-              <div className="product-image">{product.image}</div>
-              <div className="product-visibility">
+              <div className="product-image">
+                <img 
+                  src={getImageByDishName(product.image)} 
+                  alt={product.name}
+                  className="product-img"
+                />
+              </div>
+              <div className="product-controls">
+                <button
+                  className={`availability-toggle ${product.isAvailable ? 'available' : 'unavailable'}`}
+                  onClick={() => handleToggleAvailability(product.id)}
+                  title={product.isAvailable ? 'Marcar como no disponible' : 'Marcar como disponible'}
+                >
+                  {product.isAvailable ? '✅' : '❌'}
+                </button>
                 <button
                   className={`visibility-toggle ${product.isVisible ? 'visible' : 'hidden'}`}
                   onClick={() => handleToggleVisibility(product.id)}
@@ -159,7 +165,12 @@ const MenuManagement = () => {
                 </span>
               </div>
               <p className="product-description">{product.description}</p>
-              <div className="product-price">${product.price.toFixed(2)}</div>
+              <div className="product-info">
+                <div className="product-price">${product.price.toFixed(2)}</div>
+                <div className="preparation-time">
+                  ⏱️ {product.preparationTime || 15} min
+                </div>
+              </div>
               
               <div className="product-ingredients">
                 <strong>Ingredientes:</strong>
