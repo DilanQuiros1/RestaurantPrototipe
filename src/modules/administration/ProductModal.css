@@ -288,6 +288,43 @@
   }
 }
 
+/* Selector de tipo de imagen */
+.image-type-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #e9ecef;
+}
+
+.type-option {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.type-option:hover {
+  background: #e9ecef;
+  color: #667eea;
+}
+
+.type-option.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
 /* Selector de imágenes */
 .image-selector {
   display: flex;
@@ -335,19 +372,41 @@
   background: white;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.image-option::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-option:hover::before {
+  opacity: 0.1;
 }
 
 .image-option:hover {
   border-color: #667eea;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.25);
 }
 
 .image-option.selected {
   border-color: #667eea;
   background: linear-gradient(135deg, #667eea10, #764ba210);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.image-option.selected::before {
+  opacity: 0.15;
 }
 
 .option-image {
@@ -356,6 +415,9 @@
   object-fit: cover;
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .option-name {
@@ -364,6 +426,8 @@
   color: #495057;
   text-align: center;
   line-height: 1.2;
+  position: relative;
+  z-index: 1;
 }
 
 /* Campo de tiempo de preparación */
@@ -392,6 +456,16 @@
 
   .product-form {
     padding: 20px;
+  }
+
+  .image-type-selector {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .type-option {
+    padding: 10px 12px;
+    font-size: 0.8rem;
   }
 
   .emoji-selector {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../../components/common/Button';
-import { menuImages, getImageByDishName } from '../menu/menuImages';
+import { ImageUploader } from '../../components/common';
+import { getImageByDishName } from '../menu/menuImages';
 import './ProductModal.css';
 
 const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
@@ -15,6 +16,9 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [imageType, setImageType] = useState('predefined'); // 'predefined' o 'custom'
+  const [customImage, setCustomImage] = useState(null);
+  const [customImageFile, setCustomImageFile] = useState(null);
 
   const categories = [
     { id: 'comidas-rapidas', label: 'Comidas Rápidas' },
@@ -56,15 +60,30 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
 
   useEffect(() => {
     if (product) {
+      // Verificar si la imagen es una URL personalizada (data:image o http)
+      const isCustomImageUrl = product.image && (
+        product.image.startsWith('data:image') || 
+        product.image.startsWith('blob:') || 
+        product.image.startsWith('http')
+      );
+
       setFormData({
         name: product.name || '',
         description: product.description || '',
         price: product.price || '',
         category: product.category || 'comidas-rapidas',
         ingredients: product.ingredients || [''],
-        image: product.image || 'Filete de Res',
+        image: isCustomImageUrl ? 'custom' : (product.image || 'Filete de Res'),
         preparationTime: product.preparationTime || 15
       });
+
+      if (isCustomImageUrl) {
+        setImageType('custom');
+        setCustomImage(product.image);
+      } else {
+        setImageType('predefined');
+        setCustomImage(null);
+      }
     } else {
       setFormData({
         name: '',
@@ -75,9 +94,63 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
         image: 'Filete de Res',
         preparationTime: 15
       });
+      setImageType('predefined');
+      setCustomImage(null);
+      setCustomImageFile(null);
     }
     setErrors({});
   }, [product, isOpen]);
+
+  // Efecto para actualizar la imagen cuando cambia la categoría (solo para imágenes predefinidas)
+  useEffect(() => {
+    if (imageType === 'predefined') {
+      const currentCategoryImages = availableImages[formData.category] || [];
+      const currentImageExists = currentCategoryImages.some(img => img.key === formData.image);
+      
+      // Si la imagen actual no está disponible en la nueva categoría, seleccionar la primera disponible
+      if (!currentImageExists && currentCategoryImages.length > 0) {
+        setFormData(prev => ({ ...prev, image: currentCategoryImages[0].key }));
+      }
+    }
+  }, [formData.category, imageType]);
+
+  // Función para obtener las imágenes disponibles para la categoría actual
+  const getCurrentCategoryImages = () => {
+    return availableImages[formData.category] || [];
+  };
+
+  // Funciones para manejar imágenes personalizadas
+  const handleCustomImageChange = (imageUrl, file) => {
+    setCustomImage(imageUrl);
+    setCustomImageFile(file);
+    setImageType('custom');
+    setFormData(prev => ({ ...prev, image: 'custom' }));
+  };
+
+  const handleCustomImageRemove = () => {
+    setCustomImage(null);
+    setCustomImageFile(null);
+    setImageType('predefined');
+    const currentCategoryImages = getCurrentCategoryImages();
+    setFormData(prev => ({ 
+      ...prev, 
+      image: currentCategoryImages.length > 0 ? currentCategoryImages[0].key : 'Filete de Res'
+    }));
+  };
+
+  // Función para cambiar el tipo de selector de imagen
+  const handleImageTypeChange = (type) => {
+    setImageType(type);
+    if (type === 'predefined') {
+      setCustomImage(null);
+      setCustomImageFile(null);
+      const currentCategoryImages = getCurrentCategoryImages();
+      setFormData(prev => ({ 
+        ...prev, 
+        image: currentCategoryImages.length > 0 ? currentCategoryImages[0].key : 'Filete de Res'
+      }));
+    }
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -115,7 +188,9 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
         ...formData,
         price: parseFloat(formData.price),
         preparationTime: parseInt(formData.preparationTime),
-        ingredients: cleanIngredients
+        ingredients: cleanIngredients,
+        // Si es imagen personalizada, usar la URL personalizada
+        image: imageType === 'custom' ? customImage : formData.image
       };
       onSave(productData);
     }
@@ -165,34 +240,65 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
         <form onSubmit={handleSubmit} className="product-form">
           <div className="form-group">
             <label htmlFor="image">Imagen del Producto</label>
-            <div className="image-selector">
-              <div className="current-image">
-                <img 
-                  src={getImageByDishName(formData.image)} 
-                  alt="Imagen actual"
-                  className="preview-image"
-                />
-                <span className="image-name">{formData.image}</span>
-              </div>
-              <div className="image-options">
-                {availableImages[formData.category]?.map((imageOption, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    className={`image-option ${formData.image === imageOption.key ? 'selected' : ''}`}
-                    onClick={() => handleInputChange('image', imageOption.key)}
-                    title={imageOption.name}
-                  >
-                    <img 
-                      src={getImageByDishName(imageOption.key)} 
-                      alt={imageOption.name}
-                      className="option-image"
-                    />
-                    <span className="option-name">{imageOption.name}</span>
-                  </button>
-                ))}
-              </div>
+            
+            {/* Selector de tipo de imagen */}
+            <div className="image-type-selector">
+              <button
+                type="button"
+                className={`type-option ${imageType === 'predefined' ? 'active' : ''}`}
+                onClick={() => handleImageTypeChange('predefined')}
+              >
+                📷 Usar Imagen Predefinida
+              </button>
+              <button
+                type="button"
+                className={`type-option ${imageType === 'custom' ? 'active' : ''}`}
+                onClick={() => handleImageTypeChange('custom')}
+              >
+                📁 Subir Mi Imagen
+              </button>
             </div>
+
+            {/* Selector de imágenes predefinidas */}
+            {imageType === 'predefined' && (
+              <div className="image-selector">
+                <div className="current-image">
+                  <img 
+                    src={getImageByDishName(formData.image)} 
+                    alt="Imagen actual"
+                    className="preview-image"
+                  />
+                  <span className="image-name">{formData.image}</span>
+                </div>
+                <div className="image-options">
+                  {getCurrentCategoryImages().map((imageOption, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className={`image-option ${formData.image === imageOption.key ? 'selected' : ''}`}
+                      onClick={() => handleInputChange('image', imageOption.key)}
+                      title={imageOption.name}
+                    >
+                      <img 
+                        src={getImageByDishName(imageOption.key)} 
+                        alt={imageOption.name}
+                        className="option-image"
+                      />
+                      <span className="option-name">{imageOption.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Uploader de imágenes personalizadas */}
+            {imageType === 'custom' && (
+              <ImageUploader
+                currentImage={customImage}
+                onImageChange={handleCustomImageChange}
+                onImageRemove={handleCustomImageRemove}
+              />
+            )}
           </div>
 
           <div className="form-group">

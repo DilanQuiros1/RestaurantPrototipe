@@ -17,6 +17,20 @@ const Menu = ({ onAdminAccess }) => {
   const [menuData, setMenuData] = useState({});
   const [categories, setCategories] = useState([]);
 
+  // Función para obtener la imagen correcta (personalizada o predefinida)
+  const getProductImage = (imageValue) => {
+    // Si la imagen comienza con data:, blob: o http, es una imagen personalizada
+    if (imageValue && (
+      imageValue.startsWith('data:image') || 
+      imageValue.startsWith('blob:') || 
+      imageValue.startsWith('http')
+    )) {
+      return imageValue;
+    }
+    // Si no, usar el servicio de imágenes predefinidas
+    return getImageByDishName(imageValue);
+  };
+
   // Cargar datos del menú desde el servicio
   useEffect(() => {
     loadMenuData();
@@ -186,7 +200,7 @@ const Menu = ({ onAdminAccess }) => {
             key={item.id}
             item={{
               ...item,
-              image: getImageByDishName(item.image)
+              image: getProductImage(item.image)
             }}
             onSelect={handleSelectItem}
           />

@@ -16,6 +16,20 @@ const MenuManagement = () => {
     loadProducts();
   }, []);
 
+  // Función para obtener la imagen correcta (personalizada o predefinida)
+  const getProductImage = (imageValue) => {
+    // Si la imagen comienza con data:, blob: o http, es una imagen personalizada
+    if (imageValue && (
+      imageValue.startsWith('data:image') || 
+      imageValue.startsWith('blob:') || 
+      imageValue.startsWith('http')
+    )) {
+      return imageValue;
+    }
+    // Si no, usar el servicio de imágenes predefinidas
+    return getImageByDishName(imageValue);
+  };
+
   const loadProducts = () => {
     const allItems = menuService.getAllItems();
     setProducts(allItems);
@@ -131,7 +145,7 @@ const MenuManagement = () => {
             <div className="product-header">
               <div className="product-image">
                 <img 
-                  src={getImageByDishName(product.image)} 
+                  src={getProductImage(product.image)} 
                   alt={product.name}
                   className="product-img"
                 />
