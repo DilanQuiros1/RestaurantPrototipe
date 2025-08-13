@@ -37,9 +37,9 @@ function App() {
       {/* Navegación principal entre módulos - solo visible cuando no está en vista de menú */}
       {currentView !== 'menu' && (
         <nav className="app-navigation">
-          <div className="nav-brand">
+          {/* <div className="nav-brand">
             <h1>🍽️ RestaurantApp</h1>
-          </div>
+          </div> */}
           
           <div className="nav-buttons">
             <button 
