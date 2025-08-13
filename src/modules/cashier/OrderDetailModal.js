@@ -212,7 +212,7 @@ const OrderDetailModal = ({ isOpen, order, onClose, onProceedToPayment }) => {
                     Descuento {appliedPromo ? `(${appliedPromo.description})` : 
                     `(${discount}${discountType === 'percentage' ? '%' : '$'})`}:
                   </span>
-                  <span className="amount discount">-${discountAmount.toFixed(2)}</span>
+                  <span className="amount discount">{discountAmount.toFixed(2)}</span>
                 </div>
               )}
               
