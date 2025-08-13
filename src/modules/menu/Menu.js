@@ -114,18 +114,28 @@ const Menu = ({ onAdminAccess }) => {
     { id: 'bebidas', name: 'Bebidas' }
   ];
 
-  const handleSelectItem = (item) => {
+  const handleSelectItem = (itemWithDetails) => {
     setOrder(prevOrder => {
-      const existingItem = prevOrder.find(orderItem => orderItem.id === item.id);
+      // Si el item ya existe con los mismos comentarios, aumentar cantidad
+      const existingItem = prevOrder.find(orderItem => 
+        orderItem.id === itemWithDetails.id && 
+        orderItem.comments === itemWithDetails.comments
+      );
       
       if (existingItem) {
         return prevOrder.map(orderItem =>
-          orderItem.id === item.id
-            ? { ...orderItem, quantity: orderItem.quantity + 1 }
+          orderItem.id === itemWithDetails.id && orderItem.comments === itemWithDetails.comments
+            ? { ...orderItem, quantity: orderItem.quantity + itemWithDetails.quantity }
             : orderItem
         );
       } else {
-        return [...prevOrder, { ...item, quantity: 1 }];
+        // Crear un ID único para items con diferentes comentarios
+        const uniqueId = `${itemWithDetails.id}-${Date.now()}`;
+        return [...prevOrder, { 
+          ...itemWithDetails, 
+          uniqueId,
+          quantity: itemWithDetails.quantity || 1 
+        }];
       }
     });
   };

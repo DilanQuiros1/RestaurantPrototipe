@@ -32,6 +32,17 @@
   box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
 }
 
+.btn-success {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
 .btn-select {
   background: linear-gradient(135deg, #ff9ff3, #f368e0);
   color: white;
