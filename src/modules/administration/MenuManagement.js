@@ -150,6 +150,14 @@ const MenuManagement = () => {
             
             <div className="product-content">
               <h3 className="product-name">{product.name}</h3>
+              <div className="product-status">
+                <span className={`status-badge ${product.isVisible ? 'visible' : 'hidden'}`}>
+                  {product.isVisible ? 'Visible' : 'Oculto'}
+                </span>
+                <span className={`status-badge ${product.isAvailable ? 'available' : 'unavailable'}`}>
+                  {product.isAvailable ? 'Disponible' : 'No disponible'}
+                </span>
+              </div>
               <p className="product-description">{product.description}</p>
               <div className="product-price">${product.price.toFixed(2)}</div>
               
