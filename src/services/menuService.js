@@ -4,8 +4,17 @@ class MenuService {
   constructor() {
     // En un demo, trabajamos con los datos en memoria
     // En producción, esto sería una API real
-    this.data = this.loadFromLocalStorage() || { ...menuData };
+    // TEMPORAL: Forzar uso del JSON para debug
+    console.log('=== MENUSERVICE DEBUG ===');
+    const savedData = this.loadFromLocalStorage();
+    if (savedData) {
+      console.log('Datos en localStorage - Promociones:', savedData.promotions?.length || 0);
+    }
+    console.log('Datos en JSON - Promociones:', menuData.promotions.length);
+    
+    this.data = { ...menuData }; // Forzar uso del JSON
     this.saveToLocalStorage();
+    console.log('Usando datos del JSON directamente');
   }
 
   // Cargar datos del localStorage para persistencia en el demo
@@ -239,6 +248,58 @@ class MenuService {
     }
 
     return categories;
+  }
+
+  // === MÉTODOS CRUD PARA PROMOCIONES ===
+
+  // Agregar nueva promoción
+  addPromotion(promotionData) {
+    const newPromotion = {
+      ...promotionData,
+      id: Math.max(...this.data.promotions.map(p => p.id), 0) + 1,
+      createdAt: new Date().toISOString()
+    };
+    
+    this.data.promotions.push(newPromotion);
+    this.saveToLocalStorage();
+    return newPromotion;
+  }
+
+  // Actualizar promoción existente
+  updatePromotion(id, promotionData) {
+    const index = this.data.promotions.findIndex(p => p.id === id);
+    if (index !== -1) {
+      this.data.promotions[index] = {
+        ...this.data.promotions[index],
+        ...promotionData,
+        id: id // Mantener el ID original
+      };
+      this.saveToLocalStorage();
+      return this.data.promotions[index];
+    }
+    return null;
+  }
+
+  // Eliminar promoción
+  deletePromotion(id) {
+    const index = this.data.promotions.findIndex(p => p.id === id);
+    if (index !== -1) {
+      const deletedPromotion = this.data.promotions.splice(index, 1)[0];
+      this.saveToLocalStorage();
+      return deletedPromotion;
+    }
+    return null;
+  }
+
+  // Alternar estado activo de una promoción
+  togglePromotionStatus(id) {
+    const promotion = this.data.promotions.find(p => p.id === id);
+    if (promotion) {
+      promotion.isActive = !promotion.isActive;
+      this.saveToLocalStorage();
+      return promotion;
+    }
+    return null;
   }
 }
 

@@ -50,10 +50,18 @@ const Menu = ({ onAdminAccess }) => {
     const menuStructure = menuService.getMenuStructureWithPromotions();
     const categoriesData = menuService.getCategoriesWithPromotions();
     
-    console.log('=== DEBUG MENU ===');
+    console.log('=== DEBUG MENU CLIENT ===');
     console.log('Menu structure:', menuStructure);
     console.log('Categories:', categoriesData);
     console.log('Promociones en structure:', menuStructure.promociones);
+    console.log('Promociones count:', menuStructure.promociones ? menuStructure.promociones.length : 0);
+    
+    // Verificar datos en localStorage
+    const localData = localStorage.getItem('restaurantMenuData');
+    if (localData) {
+      const parsed = JSON.parse(localData);
+      console.log('Promociones en localStorage:', parsed.promotions?.length || 0);
+    }
     
     setMenuData(menuStructure);
     setCategories(categoriesData);
@@ -172,6 +180,8 @@ const Menu = ({ onAdminAccess }) => {
   // TEMPORAL: Función para resetear datos
   const resetData = () => {
     localStorage.removeItem('restaurantMenuData');
+    localStorage.removeItem('restaurant_custom_images'); // También limpiar imágenes si es necesario
+    alert('Datos reseteados. La página se recargará.');
     window.location.reload();
   };
 

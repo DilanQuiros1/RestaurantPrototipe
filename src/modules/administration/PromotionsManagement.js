@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import menuService from '../../services/menuService';
 import './PromotionsManagement.css';
 
 const PromotionsManagement = () => {
@@ -19,53 +20,26 @@ const PromotionsManagement = () => {
     priority: 1
   });
 
-  // Datos de ejemplo de productos del menú
+  // Cargar datos reales del menuService
   useEffect(() => {
-    const mockMenuItems = [
-      { id: 1, name: 'Hamburguesa Clásica', price: 8.99, category: 'comidas-rapidas' },
-      { id: 2, name: 'Pizza Margherita', price: 12.99, category: 'comidas-rapidas' },
-      { id: 3, name: 'Filete de Res', price: 24.99, category: 'platos-fuertes' },
-      { id: 4, name: 'Salmón a la Plancha', price: 22.99, category: 'platos-fuertes' },
-      { id: 5, name: 'Pasta Alfredo', price: 14.99, category: 'platos-fuertes' },
-      { id: 6, name: 'Ensalada César', price: 8.99, category: 'platos-fuertes' },
-      { id: 7, name: 'Coca Cola', price: 2.50, category: 'bebidas' },
-      { id: 8, name: 'Tiramisu', price: 6.99, category: 'postres' }
-    ];
-    setMenuItems(mockMenuItems);
-
-    // Datos de ejemplo de promociones
-    const mockPromotions = [
-      {
-        id: 1,
-        name: 'Hamburguesa del Día',
-        description: 'Hamburguesa clásica con descuento especial',
-        menuItemId: 1,
-        discountType: 'percentage',
-        discountValue: 20,
-        startDate: '2025-01-10',
-        endDate: '2025-01-15',
-        isActive: true,
-        isDailySpecial: true,
-        priority: 1,
-        createdAt: '2025-01-10T10:00:00Z'
-      },
-      {
-        id: 2,
-        name: 'Oferta Filete Premium',
-        description: 'Descuento en nuestro mejor filete',
-        menuItemId: 3,
-        discountType: 'fixed',
-        discountValue: 5.00,
-        startDate: '2025-01-12',
-        endDate: '2025-01-20',
-        isActive: true,
-        isDailySpecial: false,
-        priority: 2,
-        createdAt: '2025-01-12T14:30:00Z'
-      }
-    ];
-    setPromotions(mockPromotions);
+    loadData();
   }, []);
+
+  const loadData = () => {
+    // Cargar items del menú desde menuService
+    const allItems = menuService.getAllItems();
+    setMenuItems(allItems);
+
+    // Cargar promociones desde menuService
+    const currentPromotions = menuService.getPromotions();
+    
+    console.log('=== DEBUG ADMIN ===');
+    console.log('Items cargados:', allItems.length);
+    console.log('Promociones cargadas:', currentPromotions.length);
+    currentPromotions.forEach(p => console.log(`  ${p.id}: ${p.name} (Item: ${p.menuItemId})`));
+    
+    setPromotions(currentPromotions);
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -78,25 +52,36 @@ const PromotionsManagement = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (editingPromotion) {
-      // Actualizar promoción existente
-      setPromotions(prev => prev.map(promo => 
-        promo.id === editingPromotion.id 
-          ? { ...formData, id: editingPromotion.id, createdAt: editingPromotion.createdAt }
-          : promo
-      ));
-    } else {
-      // Crear nueva promoción
-      const newPromotion = {
-        ...formData,
-        id: Date.now(),
-        createdAt: new Date().toISOString()
-      };
-      setPromotions(prev => [...prev, newPromotion]);
+    try {
+      if (editingPromotion) {
+        // Actualizar promoción existente
+        const updatedPromotion = menuService.updatePromotion(editingPromotion.id, formData);
+        if (updatedPromotion) {
+          // Recargar datos
+          loadData();
+          setIsModalOpen(false);
+          resetForm();
+          alert('Promoción actualizada exitosamente');
+        } else {
+          alert('Error al actualizar la promoción');
+        }
+      } else {
+        // Agregar nueva promoción
+        const newPromotion = menuService.addPromotion(formData);
+        if (newPromotion) {
+          // Recargar datos
+          loadData();
+          setIsModalOpen(false);
+          resetForm();
+          alert('Promoción creada exitosamente');
+        } else {
+          alert('Error al crear la promoción');
+        }
+      }
+    } catch (error) {
+      console.error('Error en handleSubmit:', error);
+      alert('Error al procesar la promoción');
     }
-
-    resetForm();
-    setIsModalOpen(false);
   };
 
   const resetForm = () => {
@@ -123,16 +108,23 @@ const PromotionsManagement = () => {
 
   const handleDelete = (promotionId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta promoción?')) {
-      setPromotions(prev => prev.filter(promo => promo.id !== promotionId));
+      const deleted = menuService.deletePromotion(promotionId);
+      if (deleted) {
+        loadData(); // Recargar datos
+        alert('Promoción eliminada exitosamente');
+      } else {
+        alert('Error al eliminar la promoción');
+      }
     }
   };
 
   const togglePromotionStatus = (promotionId) => {
-    setPromotions(prev => prev.map(promo => 
-      promo.id === promotionId 
-        ? { ...promo, isActive: !promo.isActive }
-        : promo
-    ));
+    const updated = menuService.togglePromotionStatus(promotionId);
+    if (updated) {
+      loadData(); // Recargar datos
+    } else {
+      alert('Error al cambiar el estado de la promoción');
+    }
   };
 
   const getMenuItemName = (menuItemId) => {
