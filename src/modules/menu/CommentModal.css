@@ -207,6 +207,10 @@
   transition: all 0.2s ease;
   text-align: center;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .suggestion-chip:hover {
@@ -214,6 +218,72 @@
   color: white;
   border-color: #667eea;
   transform: translateY(-1px);
+}
+
+.suggestion-chip.selected {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.suggestion-icon {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* Sección de ingredientes */
+.ingredients-section {
+  margin-bottom: 25px;
+}
+
+.ingredients-section label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #333;
+}
+
+.ingredients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.ingredient-chip {
+  background: #e8f5e8;
+  border: 2px solid #28a745;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #155724;
+}
+
+.ingredient-chip:hover {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+  transform: translateY(-1px);
+}
+
+.ingredient-chip.selected {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.ingredient-icon {
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 /* Sección de comentarios */
@@ -318,6 +388,16 @@
   
   .suggestions-grid {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+  
+  .ingredients-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+  
+  .suggestion-chip,
+  .ingredient-chip {
+    font-size: 0.8rem;
+    padding: 6px 10px;
   }
   
   .comment-modal-actions {

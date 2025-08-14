@@ -1,0 +1,82 @@
+{
+  "observacionesPorCategoria": {
+    "comidas-rapidas": [
+      "Sin cebolla",
+      "Sin lechuga", 
+      "Sin tomate",
+      "Extra queso",
+      "Sin mayonesa",
+      "Sin mostaza",
+      "Sin pepinillos",
+      "Extra salsa",
+      "Sin salsa",
+      "No picante",
+      "Picante",
+      "Pan tostado",
+      "Sin pan"
+    ],
+    "platos-fuertes": [
+      "Sin cebolla",
+      "Sin ajo", 
+      "Término medio",
+      "Bien cocido",
+      "Poco cocido",
+      "Sin sal",
+      "Sin pimienta",
+      "Salsa aparte",
+      "Sin salsa",
+      "Extra salsa",
+      "No picante",
+      "Picante",
+      "Sin verduras",
+      "Verduras aparte"
+    ],
+    "bebidas": [
+      "Sin azúcar",
+      "Con azúcar extra",
+      "Sin hielo",
+      "Extra hielo",
+      "Sin gas",
+      "Con limón",
+      "Sin limón",
+      "Temperatura ambiente",
+      "Bien frío",
+      "Sin endulzante",
+      "Con stevia"
+    ],
+    "postres": [
+      "Sin azúcar",
+      "Azúcar extra",
+      "Sin crema",
+      "Extra crema",
+      "Sin nueces",
+      "Sin chocolate",
+      "Extra chocolate",
+      "Sin frutas",
+      "Caliente",
+      "Frío",
+      "Sin canela"
+    ],
+    "entradas": [
+      "Sin cebolla",
+      "Sin ajo",
+      "Sin sal",
+      "Salsa aparte",
+      "Sin salsa",
+      "No picante", 
+      "Picante",
+      "Extra limón",
+      "Sin limón",
+      "Bien caliente",
+      "Temperatura ambiente"
+    ]
+  },
+  "observacionesGenerales": [
+    "Servir rápido",
+    "Para llevar",
+    "Sin cubiertos",
+    "Extra servilletas",
+    "En plato separado",
+    "Todo junto"
+  ]
+}

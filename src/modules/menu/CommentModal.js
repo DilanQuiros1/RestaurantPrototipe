@@ -1,55 +1,100 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '../../components/common/Button';
+import observacionesData from '../../data/observacionesComunes.json';
 import './CommentModal.css';
 
 const CommentModal = ({ isOpen, item, onClose, onConfirm }) => {
   const [comment, setComment] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [selectedCommonComments, setSelectedCommonComments] = useState([]);
+  const [ingredientsToRemove, setIngredientsToRemove] = useState([]);
 
-  // Sugerencias de comentarios comunes
-  const commonComments = [
-    'Sin cebolla',
-    'Sin lechuga',
-    'Sin tomate',
-    'Extra queso',
-    'Sin mayonesa',
-    'Sin mostaza',
-    'Término medio',
-    'Bien cocido',
-    'Sin azúcar',
-    'Con azúcar extra',
-    'Sin sal',
-    'Picante',
-    'No picante',
-    'Sin salsa',
-    'Salsa aparte'
-  ];
+  // Resetear estado cuando se abre el modal
+  useEffect(() => {
+    if (isOpen) {
+      setComment('');
+      setQuantity(1);
+      setSelectedCommonComments([]);
+      setIngredientsToRemove([]);
+    }
+  }, [isOpen, item]);
+
+  // Obtener observaciones comunes para la categoría del producto
+  const getCommonCommentsForCategory = () => {
+    const categoryComments = observacionesData.observacionesPorCategoria[item?.category] || [];
+    const generalComments = observacionesData.observacionesGenerales || [];
+    return [...categoryComments, ...generalComments];
+  };
+
+  // Obtener ingredientes del producto para permitir eliminarlos
+  const getProductIngredients = () => {
+    return item?.ingredients || [];
+  };
+
+  // Manejar toggle de observaciones comunes
+  const toggleCommonComment = (commonComment) => {
+    setSelectedCommonComments(prev => {
+      if (prev.includes(commonComment)) {
+        // Si ya está seleccionado, lo quitamos
+        return prev.filter(c => c !== commonComment);
+      } else {
+        // Si no está seleccionado, lo agregamos
+        return [...prev, commonComment];
+      }
+    });
+  };
+
+  // Manejar toggle de ingredientes para eliminar
+  const toggleIngredientRemoval = (ingredient) => {
+    setIngredientsToRemove(prev => {
+      const ingredientText = `Sin ${ingredient.toLowerCase()}`;
+      if (prev.includes(ingredientText)) {
+        return prev.filter(ing => ing !== ingredientText);
+      } else {
+        return [...prev, ingredientText];
+      }
+    });
+  };
+
+  // Agregar comentario personalizado sin duplicados
+  const addCustomComment = (newComment) => {
+    const trimmedComment = newComment.trim();
+    if (!trimmedComment) return;
+
+    // Verificar si ya existe este comentario
+    const currentComments = comment.split(',').map(c => c.trim()).filter(c => c);
+    if (!currentComments.includes(trimmedComment)) {
+      if (comment.trim()) {
+        setComment(prev => `${prev}, ${trimmedComment}`);
+      } else {
+        setComment(trimmedComment);
+      }
+    }
+  };
 
   const handleSubmit = () => {
+    // Combinar todos los comentarios seleccionados
+    const allComments = [
+      ...selectedCommonComments,
+      ...ingredientsToRemove,
+      comment.trim()
+    ].filter(c => c).join(', ');
+
     onConfirm({
       ...item,
       quantity,
-      comments: comment.trim() || null
+      comments: allComments || null
     });
     
-    // Limpiar el modal
-    setComment('');
-    setQuantity(1);
-    onClose();
+    handleCancel();
   };
 
   const handleCancel = () => {
     setComment('');
     setQuantity(1);
+    setSelectedCommonComments([]);
+    setIngredientsToRemove([]);
     onClose();
-  };
-
-  const addCommonComment = (commonComment) => {
-    if (comment.trim()) {
-      setComment(prev => `${prev}, ${commonComment}`);
-    } else {
-      setComment(commonComment);
-    }
   };
 
   if (!isOpen) return null;
@@ -112,20 +157,52 @@ const CommentModal = ({ isOpen, item, onClose, onConfirm }) => {
             </div>
           </div>
 
-          {/* Comentarios sugeridos */}
+          {/* Ingredientes del plato - opción de quitar */}
+          {getProductIngredients().length > 0 && (
+            <div className="ingredients-section">
+              <label>Ingredientes (toca para quitar):</label>
+              <div className="ingredients-grid">
+                {getProductIngredients().map((ingredient, index) => {
+                  const ingredientText = `Sin ${ingredient.toLowerCase()}`;
+                  const isSelected = ingredientsToRemove.includes(ingredientText);
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      className={`ingredient-chip ${isSelected ? 'selected' : ''}`}
+                      onClick={() => toggleIngredientRemoval(ingredient)}
+                    >
+                      <span className="ingredient-icon">
+                        {isSelected ? '✓' : '−'}
+                      </span>
+                      {ingredient}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Observaciones comunes por categoría */}
           <div className="suggestions-section">
             <label>Observaciones comunes:</label>
             <div className="suggestions-grid">
-              {commonComments.map((suggestion, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  className="suggestion-chip"
-                  onClick={() => addCommonComment(suggestion)}
-                >
-                  {suggestion}
-                </button>
-              ))}
+              {getCommonCommentsForCategory().map((suggestion, index) => {
+                const isSelected = selectedCommonComments.includes(suggestion);
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    className={`suggestion-chip ${isSelected ? 'selected' : ''}`}
+                    onClick={() => toggleCommonComment(suggestion)}
+                  >
+                    <span className="suggestion-icon">
+                      {isSelected ? '✓' : '+'}
+                    </span>
+                    {suggestion}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
