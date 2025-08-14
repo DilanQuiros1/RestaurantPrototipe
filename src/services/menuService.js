@@ -162,6 +162,84 @@ class MenuService {
       return false;
     }
   }
+
+  // === MÉTODOS PARA PROMOCIONES ===
+
+  // Obtener todas las promociones
+  getPromotions() {
+    return this.data.promotions || [];
+  }
+
+  // Obtener promociones activas
+  getActivePromotions() {
+    const now = new Date();
+    return this.getPromotions().filter(promo => 
+      promo.isActive &&
+      new Date(promo.startDate) <= now &&
+      new Date(promo.endDate) >= now
+    );
+  }
+
+  // Obtener productos con promociones activas
+  getPromotedItems() {
+    const activePromotions = this.getActivePromotions();
+    const allItems = this.getAllItems();
+
+    return activePromotions
+      .map(promo => {
+        const item = allItems.find(item => item.id === promo.menuItemId);
+        return item ? { ...item, promotion: promo } : null;
+      })
+      .filter(item => item !== null)
+      .sort((a, b) => a.promotion.priority - b.promotion.priority);
+  }
+
+  // Obtener IDs de productos promocionados
+  getPromotedItemIds() {
+    const activePromotions = this.getActivePromotions();
+    return activePromotions.map(promo => promo.menuItemId);
+  }
+
+  // Filtrar productos promocionados de una lista
+  filterPromotedItems(items) {
+    const promotedIds = this.getPromotedItemIds();
+    return items.filter(item => !promotedIds.includes(item.id));
+  }
+
+  // Obtener estructura del menú con categoría de promociones
+  getMenuStructureWithPromotions() {
+    const structure = this.getMenuStructure();
+    const promotedItems = this.getPromotedItems();
+    
+    // Agregar categoría de promociones si hay items promocionados
+    if (promotedItems.length > 0) {
+      structure.promociones = promotedItems;
+    }
+
+    // Filtrar productos promocionados de otras categorías
+    Object.keys(structure).forEach(categoryKey => {
+      if (categoryKey !== 'promociones') {
+        structure[categoryKey] = this.filterPromotedItems(structure[categoryKey] || []);
+      }
+    });
+
+    return structure;
+  }
+
+  // Obtener categorías con promociones incluidas
+  getCategoriesWithPromotions() {
+    // Filtrar la categoría promociones del JSON para evitar duplicados
+    const categories = this.getCategories().filter(cat => cat.id !== 'promociones');
+    const promotedItems = this.getPromotedItems();
+    
+    // Agregar categoría de promociones si hay items promocionados
+    if (promotedItems.length > 0) {
+      const promotionsCategory = { id: 'promociones', name: '🎉 Promociones', icon: '🎉' };
+      return [promotionsCategory, ...categories];
+    }
+
+    return categories;
+  }
 }
 
 // Crear una instancia singleton para usar en toda la aplicación

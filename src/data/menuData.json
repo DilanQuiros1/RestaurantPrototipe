@@ -1,8 +1,63 @@
 {
   "categories": [
+    { "id": "promociones", "name": "🎉 Promociones", "icon": "🎉" },
     { "id": "comidas-rapidas", "name": "Comidas Rápidas", "icon": "🍔" },
     { "id": "platos-fuertes", "name": "Platos Fuertes", "icon": "🍽️" },
     { "id": "bebidas", "name": "Bebidas", "icon": "🥤" }
+  ],
+  "promotions": [
+    {
+      "id": 1,
+      "name": "Hamburguesa del Día",
+      "description": "Hamburguesa clásica con descuento especial",
+      "menuItemId": 1,
+      "discountType": "percentage",
+      "discountValue": 20,
+      "startDate": "2025-08-10",
+      "endDate": "2025-08-20",
+      "isActive": true,
+      "isDailySpecial": true,
+      "priority": 1
+    },
+    {
+      "id": 2,
+      "name": "Oferta Filete Premium",
+      "description": "Descuento en nuestro mejor filete",
+      "menuItemId": 5,
+      "discountType": "fixed",
+      "discountValue": 5.00,
+      "startDate": "2025-08-12",
+      "endDate": "2025-08-25",
+      "isActive": true,
+      "isDailySpecial": false,
+      "priority": 2
+    },
+    {
+      "id": 3,
+      "name": "Limonada Refrescante",
+      "description": "Bebida natural con descuento especial",
+      "menuItemId": 9,
+      "discountType": "percentage",
+      "discountValue": 15,
+      "startDate": "2025-08-10",
+      "endDate": "2025-08-30",
+      "isActive": true,
+      "isDailySpecial": false,
+      "priority": 3
+    },
+    {
+      "id": 4,
+      "name": "Pizza 2x1",
+      "description": "Promoción especial en pizzas",
+      "menuItemId": 3,
+      "discountType": "percentage",
+      "discountValue": 50,
+      "startDate": "2025-08-13",
+      "endDate": "2025-08-15",
+      "isActive": true,
+      "isDailySpecial": true,
+      "priority": 1
+    }
   ],
   "items": [
     {

@@ -10,7 +10,7 @@ import imageService from '../../services/imageService';
 import './Menu.css';
 
 const Menu = ({ onAdminAccess }) => {
-  const [activeCategory, setActiveCategory] = useState('comidas-rapidas');
+  const [activeCategory, setActiveCategory] = useState('promociones');
   const [order, setOrder] = useState([]);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
@@ -47,11 +47,24 @@ const Menu = ({ onAdminAccess }) => {
   }, []);
 
   const loadMenuData = () => {
-    const menuStructure = menuService.getMenuStructure();
-    const categoriesData = menuService.getCategories();
+    const menuStructure = menuService.getMenuStructureWithPromotions();
+    const categoriesData = menuService.getCategoriesWithPromotions();
+    
+    console.log('=== DEBUG MENU ===');
+    console.log('Menu structure:', menuStructure);
+    console.log('Categories:', categoriesData);
+    console.log('Promociones en structure:', menuStructure.promociones);
     
     setMenuData(menuStructure);
     setCategories(categoriesData);
+    
+    // Si no hay promociones activas y la categoría actual es promociones, cambiar a la primera disponible
+    if (!menuStructure.promociones && activeCategory === 'promociones' && categoriesData.length > 0) {
+      const firstAvailableCategory = categoriesData.find(cat => cat.id !== 'promociones');
+      if (firstAvailableCategory) {
+        setActiveCategory(firstAvailableCategory.id);
+      }
+    }
   };
 
   // Escuchar cambios en el localStorage para actualizar en tiempo real
@@ -156,6 +169,12 @@ const Menu = ({ onAdminAccess }) => {
     console.log('Llamada de mesero enviada:', callData);
   };
 
+  // TEMPORAL: Función para resetear datos
+  const resetData = () => {
+    localStorage.removeItem('restaurantMenuData');
+    window.location.reload();
+  };
+
   // Si no hay datos del menú todavía, mostrar loading
   if (!categories.length || !Object.keys(menuData).length) {
     return (
@@ -181,6 +200,25 @@ const Menu = ({ onAdminAccess }) => {
       <div className="menu-header">
         <h1 className="menu-title">🍽️ Nuestro Menú</h1>
         <p className="menu-subtitle">Descubre los sabores que te harán volver por más</p>
+        
+        {/* TEMPORAL: Botón de reset */}
+        <button 
+          onClick={resetData}
+          style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            padding: '5px 10px',
+            fontSize: '12px',
+            backgroundColor: '#ff6b6b',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          🔄 Reset
+        </button>
         
         {/* Botón Llamar Mesero */}
         <button 
