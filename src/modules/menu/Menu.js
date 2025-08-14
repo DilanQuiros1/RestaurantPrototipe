@@ -6,6 +6,7 @@ import AdminLoginModal from './AdminLoginModal';
 import WaiterCallModal from './WaiterCallModal';
 import { getImageByDishName } from './menuImages';
 import menuService from '../../services/menuService';
+import imageService from '../../services/imageService';
 import './Menu.css';
 
 const Menu = ({ onAdminAccess }) => {
@@ -18,17 +19,26 @@ const Menu = ({ onAdminAccess }) => {
   const [categories, setCategories] = useState([]);
 
   // Función para obtener la imagen correcta (personalizada o predefinida)
-  const getProductImage = (imageValue) => {
-    // Si la imagen comienza con data:, blob: o http, es una imagen personalizada
-    if (imageValue && (
-      imageValue.startsWith('data:image') || 
-      imageValue.startsWith('blob:') || 
-      imageValue.startsWith('http')
-    )) {
-      return imageValue;
+  const getProductImage = (product) => {
+    // Si el producto usa imagen personalizada, buscar en el servicio
+    if (product.image === 'custom') {
+      const savedImage = imageService.getImageByProductId(product.id);
+      if (savedImage) {
+        return savedImage.data;
+      }
     }
+
+    // Si la imagen comienza con data:, blob: o http, es una imagen personalizada legacy
+    if (product.image && (
+      product.image.startsWith('data:image') || 
+      product.image.startsWith('blob:') || 
+      product.image.startsWith('http')
+    )) {
+      return product.image;
+    }
+    
     // Si no, usar el servicio de imágenes predefinidas
-    return getImageByDishName(imageValue);
+    return getImageByDishName(product.image);
   };
 
   // Cargar datos del menú desde el servicio
@@ -200,7 +210,7 @@ const Menu = ({ onAdminAccess }) => {
             key={item.id}
             item={{
               ...item,
-              image: getProductImage(item.image)
+              image: getProductImage(item)
             }}
             onSelect={handleSelectItem}
           />

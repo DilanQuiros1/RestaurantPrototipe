@@ -15,7 +15,17 @@
       "image": "Filete de Res",
       "isVisible": true,
       "isAvailable": true,
-      "preparationTime": 15
+      "preparationTime": 15,
+      "observacionesPersonalizadas": [
+        { "nombre": "Extra queso", "precio": 1.50 },
+        { "nombre": "Extra carne", "precio": 3.00 },
+        { "nombre": "Sin mayonesa", "precio": 0 },
+        { "nombre": "Sin mostaza", "precio": 0 },
+        { "nombre": "Término medio", "precio": 0 },
+        { "nombre": "Bien cocido", "precio": 0 },
+        { "nombre": "Pan tostado", "precio": 0 },
+        { "nombre": "Extra pepinillos", "precio": 0.50 }
+      ]
     },
     {
       "id": 2,
@@ -27,7 +37,15 @@
       "image": "Pasta Carbonara",
       "isVisible": true,
       "isAvailable": true,
-      "preparationTime": 10
+      "preparationTime": 10,
+      "observacionesPersonalizadas": [
+        { "nombre": "Extra queso", "precio": 1.00 },
+        { "nombre": "Sin jalapeños", "precio": 0 },
+        { "nombre": "Extra guacamole", "precio": 1.50 },
+        { "nombre": "Sin sour cream", "precio": 0 },
+        { "nombre": "Picante", "precio": 0 },
+        { "nombre": "No picante", "precio": 0 }
+      ]
     },
     {
       "id": 3,
@@ -39,7 +57,15 @@
       "image": "Pizza Margherita",
       "isVisible": true,
       "isAvailable": true,
-      "preparationTime": 20
+      "preparationTime": 20,
+      "observacionesPersonalizadas": [
+        { "nombre": "Extra queso", "precio": 2.00 },
+        { "nombre": "Sin albahaca", "precio": 0 },
+        { "nombre": "Masa delgada", "precio": 0 },
+        { "nombre": "Masa gruesa", "precio": 1.00 },
+        { "nombre": "Orilla de queso", "precio": 3.00 },
+        { "nombre": "Extra aceite de oliva", "precio": 0.50 }
+      ]
     },
     {
       "id": 4,
@@ -63,7 +89,17 @@
       "image": "Filete de Res",
       "isVisible": true,
       "isAvailable": true,
-      "preparationTime": 25
+      "preparationTime": 25,
+      "observacionesPersonalizadas": [
+        { "nombre": "Término medio", "precio": 0 },
+        { "nombre": "Bien cocido", "precio": 0 },
+        { "nombre": "Poco cocido", "precio": 0 },
+        { "nombre": "Término tres cuartos", "precio": 0 },
+        { "nombre": "Extra salsa", "precio": 2.00 },
+        { "nombre": "Sin sal", "precio": 0 },
+        { "nombre": "Verduras aparte", "precio": 0 },
+        { "nombre": "Puré extra", "precio": 3.00 }
+      ]
     },
     {
       "id": 6,
@@ -111,7 +147,17 @@
       "image": "Limonada Natural",
       "isVisible": true,
       "isAvailable": true,
-      "preparationTime": 5
+      "preparationTime": 5,
+      "observacionesPersonalizadas": [
+        { "nombre": "Sin azúcar", "precio": 0 },
+        { "nombre": "Azúcar extra", "precio": 0 },
+        { "nombre": "Sin hielo", "precio": 0 },
+        { "nombre": "Extra hielo", "precio": 0 },
+        { "nombre": "Sin menta", "precio": 0 },
+        { "nombre": "Extra menta", "precio": 0.50 },
+        { "nombre": "Con stevia", "precio": 0 },
+        { "nombre": "Bien frío", "precio": 0 }
+      ]
     },
     {
       "id": 10,

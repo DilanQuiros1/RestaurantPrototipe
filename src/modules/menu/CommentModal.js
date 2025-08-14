@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Button from '../../components/common/Button';
-import observacionesData from '../../data/observacionesComunes.json';
 import './CommentModal.css';
 
 const CommentModal = ({ isOpen, item, onClose, onConfirm }) => {
@@ -19,17 +18,24 @@ const CommentModal = ({ isOpen, item, onClose, onConfirm }) => {
     }
   }, [isOpen, item]);
 
-  // Obtener observaciones comunes para la categoría del producto
-  const getCommonCommentsForCategory = () => {
-    const categoryComments = observacionesData.observacionesPorCategoria[item?.category] || [];
-    const generalComments = observacionesData.observacionesGenerales || [];
-    return [...categoryComments, ...generalComments];
+  // Obtener observaciones específicas del producto
+  const getProductObservations = () => {
+    return item?.observacionesPersonalizadas || [];
   };
 
-  // Obtener ingredientes del producto para permitir eliminarlos
+  // Obtener ingredientes específicos del producto
   const getProductIngredients = () => {
     return item?.ingredients || [];
   };
+
+    // Calcular costo extra de observaciones con precio
+  const extrasCost = useMemo(() => {
+    const productObservations = item?.observacionesPersonalizadas || [];
+    return selectedCommonComments.reduce((total, commentName) => {
+      const observation = productObservations.find(obs => obs.nombre === commentName);
+      return total + (observation?.precio || 0);
+    }, 0);
+  }, [selectedCommonComments, item]);
 
   // Manejar toggle de observaciones comunes
   const toggleCommonComment = (commonComment) => {
@@ -56,22 +62,6 @@ const CommentModal = ({ isOpen, item, onClose, onConfirm }) => {
     });
   };
 
-  // Agregar comentario personalizado sin duplicados
-  const addCustomComment = (newComment) => {
-    const trimmedComment = newComment.trim();
-    if (!trimmedComment) return;
-
-    // Verificar si ya existe este comentario
-    const currentComments = comment.split(',').map(c => c.trim()).filter(c => c);
-    if (!currentComments.includes(trimmedComment)) {
-      if (comment.trim()) {
-        setComment(prev => `${prev}, ${trimmedComment}`);
-      } else {
-        setComment(trimmedComment);
-      }
-    }
-  };
-
   const handleSubmit = () => {
     // Combinar todos los comentarios seleccionados
     const allComments = [
@@ -80,10 +70,15 @@ const CommentModal = ({ isOpen, item, onClose, onConfirm }) => {
       comment.trim()
     ].filter(c => c).join(', ');
 
+    // Calcular precio total incluyendo extras
+    const totalPrice = (item.price + extrasCost) * quantity;
+
     onConfirm({
       ...item,
       quantity,
-      comments: allComments || null
+      comments: allComments || null,
+      extrasCost,
+      totalPrice
     });
     
     handleCancel();
@@ -100,11 +95,11 @@ const CommentModal = ({ isOpen, item, onClose, onConfirm }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="comment-modal-overlay">
-      <div className="comment-modal">
+    <div className="comment-modal-overlay" onClick={handleCancel}>
+      <div className="comment-modal" onClick={(e) => e.stopPropagation()}>
         <div className="comment-modal-header">
           <h3>Personalizar Pedido</h3>
-          <button className="close-button" onClick={handleCancel}>
+          <button className="close-button" onClick={handleCancel} type="button">
             ✕
           </button>
         </div>
@@ -183,28 +178,37 @@ const CommentModal = ({ isOpen, item, onClose, onConfirm }) => {
             </div>
           )}
 
-          {/* Observaciones comunes por categoría */}
-          <div className="suggestions-section">
-            <label>Observaciones comunes:</label>
-            <div className="suggestions-grid">
-              {getCommonCommentsForCategory().map((suggestion, index) => {
-                const isSelected = selectedCommonComments.includes(suggestion);
-                return (
-                  <button
-                    key={index}
-                    type="button"
-                    className={`suggestion-chip ${isSelected ? 'selected' : ''}`}
-                    onClick={() => toggleCommonComment(suggestion)}
-                  >
-                    <span className="suggestion-icon">
-                      {isSelected ? '✓' : '+'}
-                    </span>
-                    {suggestion}
-                  </button>
-                );
-              })}
+          {/* Observaciones específicas del producto */}
+          {getProductObservations().length > 0 && (
+            <div className="suggestions-section">
+              <label>Observaciones disponibles:</label>
+              <div className="suggestions-grid">
+                {getProductObservations().map((observation, index) => {
+                  const isSelected = selectedCommonComments.includes(observation.nombre);
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      className={`suggestion-chip ${isSelected ? 'selected' : ''} ${observation.precio > 0 ? 'has-price' : ''}`}
+                      onClick={() => toggleCommonComment(observation.nombre)}
+                    >
+                      <span className="suggestion-icon">
+                        {isSelected ? '✓' : '+'}
+                      </span>
+                      <span className="suggestion-text">
+                        {observation.nombre}
+                        {observation.precio > 0 && (
+                          <span className="suggestion-price">
+                            +${observation.precio.toFixed(2)}
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Campo de comentarios personalizados */}
           <div className="comment-section">
@@ -228,7 +232,7 @@ const CommentModal = ({ isOpen, item, onClose, onConfirm }) => {
           <div className="modal-total">
             <span className="total-label">Total:</span>
             <span className="total-amount">
-              ${(item.price * quantity).toFixed(2)}
+              ${((item.price + extrasCost) * quantity).toFixed(2)}
             </span>
           </div>
         </div>

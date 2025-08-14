@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Button from '../../components/common/Button';
 import { ImageUploader } from '../../components/common';
 import { getImageByDishName } from '../menu/menuImages';
+import imageService from '../../services/imageService';
 import './ProductModal.css';
 
 const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
@@ -60,12 +61,13 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
 
   useEffect(() => {
     if (product) {
-      // Verificar si la imagen es una URL personalizada (data:image o http)
-      const isCustomImageUrl = product.image && (
+      // Cargar imagen personalizada si existe
+      const savedImage = imageService.getImageByProductId(product.id);
+      const isCustomImageUrl = savedImage || (product.image && (
         product.image.startsWith('data:image') || 
         product.image.startsWith('blob:') || 
         product.image.startsWith('http')
-      );
+      ));
 
       setFormData({
         name: product.name || '',
@@ -77,7 +79,10 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
         preparationTime: product.preparationTime || 15
       });
 
-      if (isCustomImageUrl) {
+      if (savedImage) {
+        setImageType('custom');
+        setCustomImage(savedImage.data);
+      } else if (isCustomImageUrl) {
         setImageType('custom');
         setCustomImage(product.image);
       } else {
@@ -128,6 +133,11 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
   };
 
   const handleCustomImageRemove = () => {
+    // Eliminar imagen guardada si existe un producto con ID
+    if (product?.id) {
+      imageService.removeImageByProductId(product.id);
+    }
+    
     setCustomImage(null);
     setCustomImageFile(null);
     setImageType('predefined');
@@ -184,14 +194,38 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
     
     if (validateForm()) {
       const cleanIngredients = formData.ingredients.filter(ingredient => ingredient.trim() !== '');
+      
+      // Preparar datos del producto
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
         preparationTime: parseInt(formData.preparationTime),
         ingredients: cleanIngredients,
-        // Si es imagen personalizada, usar la URL personalizada
-        image: imageType === 'custom' ? customImage : formData.image
+        // Si es imagen personalizada, usar 'custom' como identificador
+        image: imageType === 'custom' ? 'custom' : formData.image
       };
+
+      // Si hay imagen personalizada, guardarla en el servicio
+      if (imageType === 'custom' && customImage) {
+        try {
+          // Si es un producto existente, usar su ID, sino generar uno temporal
+          const productId = product?.id || `temp_${Date.now()}`;
+          
+          // Guardar imagen antes de guardar el producto
+          const fileName = customImageFile ? customImageFile.name : `product_${productId}`;
+          imageService.saveImage(productId, customImage, fileName);
+          
+          // Si es un producto nuevo, necesitamos pasar el ID temporal para que se pueda actualizar después
+          if (!product?.id) {
+            productData.tempImageId = productId;
+          }
+        } catch (error) {
+          console.error('Error al guardar imagen:', error);
+          alert('Error al guardar la imagen personalizada');
+          return;
+        }
+      }
+
       onSave(productData);
     }
   };

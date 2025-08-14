@@ -57,10 +57,10 @@
 }
 
 .close-button {
-  background: none;
+  background: rgba(0, 0, 0, 0.1);
   border: none;
   font-size: 1.5rem;
-  color: #999;
+  color: #666;
   cursor: pointer;
   padding: 5px;
   border-radius: 50%;
@@ -70,11 +70,13 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  font-weight: bold;
 }
 
 .close-button:hover {
-  background: #f8f9fa;
-  color: #666;
+  background: #ff6b35;
+  color: white;
+  transform: scale(1.1);
 }
 
 /* Contenido del modal */
@@ -198,38 +200,72 @@
 }
 
 .suggestion-chip {
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
-  padding: 8px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-  font-weight: 500;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 2px solid #ddd;
+  border-radius: 20px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  min-height: 40px;
 }
 
 .suggestion-chip:hover {
-  background: #667eea;
-  color: white;
-  border-color: #667eea;
-  transform: translateY(-1px);
+  border-color: #ff6b35;
+  background: #fff5f3;
 }
 
 .suggestion-chip.selected {
-  background: #667eea;
+  border-color: #ff6b35;
+  background: #ff6b35;
   color: white;
-  border-color: #667eea;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.suggestion-chip.has-price {
+  border-style: dashed;
+}
+
+.suggestion-chip.has-price.selected {
+  border-style: solid;
 }
 
 .suggestion-icon {
-  font-size: 0.9rem;
-  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f0f0f0;
+  font-size: 12px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.suggestion-chip.selected .suggestion-icon {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.suggestion-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.suggestion-price {
+  font-size: 12px;
+  font-weight: bold;
+  color: #28a745;
+  opacity: 0.8;
+}
+
+.suggestion-chip.selected .suggestion-price {
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* Sección de ingredientes */

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Button from '../../components/common/Button';
 import ProductModal from './ProductModal';
 import menuService from '../../services/menuService';
+import imageService from '../../services/imageService';
 import { getImageByDishName } from '../menu/menuImages';
 import './MenuManagement.css';
 
@@ -17,17 +18,26 @@ const MenuManagement = () => {
   }, []);
 
   // Función para obtener la imagen correcta (personalizada o predefinida)
-  const getProductImage = (imageValue) => {
-    // Si la imagen comienza con data:, blob: o http, es una imagen personalizada
-    if (imageValue && (
-      imageValue.startsWith('data:image') || 
-      imageValue.startsWith('blob:') || 
-      imageValue.startsWith('http')
-    )) {
-      return imageValue;
+  const getProductImage = (product) => {
+    // Si el producto usa imagen personalizada, buscar en el servicio
+    if (product.image === 'custom') {
+      const savedImage = imageService.getImageByProductId(product.id);
+      if (savedImage) {
+        return savedImage.data;
+      }
     }
+
+    // Si la imagen comienza con data:, blob: o http, es una imagen personalizada legacy
+    if (product.image && (
+      product.image.startsWith('data:image') || 
+      product.image.startsWith('blob:') || 
+      product.image.startsWith('http')
+    )) {
+      return product.image;
+    }
+    
     // Si no, usar el servicio de imágenes predefinidas
-    return getImageByDishName(imageValue);
+    return getImageByDishName(product.image);
   };
 
   const loadProducts = () => {
@@ -58,6 +68,10 @@ const MenuManagement = () => {
 
   const handleDeleteProduct = (productId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+      // Eliminar imagen asociada si existe
+      imageService.removeImageByProductId(productId);
+      
+      // Eliminar producto
       menuService.permanentlyDeleteItem(productId);
       loadProducts(); // Recargar lista
     }
@@ -77,13 +91,32 @@ const MenuManagement = () => {
   };
 
   const handleSaveProduct = (productData) => {
+    let savedProduct;
+    
     if (editingProduct) {
       // Editar producto existente
-      menuService.updateItem(editingProduct.id, productData);
+      savedProduct = menuService.updateItem(editingProduct.id, productData);
     } else {
       // Agregar nuevo producto
-      menuService.addItem(productData);
+      savedProduct = menuService.addItem(productData);
+      
+      // Si había una imagen temporal, actualizarla con el ID real del producto
+      if (productData.tempImageId && savedProduct?.id) {
+        try {
+          // Obtener la imagen temporal
+          const tempImage = imageService.getAllImages()[productData.tempImageId];
+          if (tempImage) {
+            // Guardar con el ID real del producto
+            imageService.saveImage(savedProduct.id, tempImage.data, tempImage.fileName);
+            // Eliminar la imagen temporal
+            imageService.removeImageById(productData.tempImageId);
+          }
+        } catch (error) {
+          console.error('Error al actualizar imagen del producto:', error);
+        }
+      }
     }
+    
     loadProducts(); // Recargar lista
     setIsModalOpen(false);
     setEditingProduct(null);
@@ -145,7 +178,7 @@ const MenuManagement = () => {
             <div className="product-header">
               <div className="product-image">
                 <img 
-                  src={getProductImage(product.image)} 
+                  src={getProductImage(product)} 
                   alt={product.name}
                   className="product-img"
                 />
