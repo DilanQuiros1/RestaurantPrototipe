@@ -570,6 +570,7 @@
   font-size: 1.2rem;
   text-decoration: line-through;
   opacity: 0.7;
+  color: white;
 }
 
 .discounted-price-section .discounted-price {
@@ -714,16 +715,123 @@
   to { transform: scale(1.2); }
 }
 
-.order-summary {
+/* Botón flotante para mostrar pedido */
+.floating-order-btn {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 30px;
+  right: 30px;
+  width: 70px;
+  height: 70px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: orderPulse 2s ease-in-out infinite;
+}
+
+.floating-order-btn:hover {
+  background: linear-gradient(135deg, #ee5a24, #d63031);
+  transform: scale(1.1);
+  box-shadow: 0 12px 35px rgba(255, 107, 107, 0.6);
+}
+
+.floating-order-btn:active {
+  transform: scale(0.95);
+}
+
+@keyframes orderPulse {
+  0%, 100% {
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+  }
+  50% {
+    box-shadow: 0 12px 35px rgba(255, 107, 107, 0.6);
+  }
+}
+
+/* Overlay para el modal del pedido */
+.order-summary-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(5px);
+}
+
+/* Modal del pedido */
+.order-summary-modal {
   background: white;
   border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  min-width: 300px;
-  z-index: 1000;
+  padding: 0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Botón para cerrar el modal */
+.close-order-summary {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-order-summary:hover {
+  background: #ff6b6b;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Estilos para el OrderSummary dentro del modal */
+.order-summary-modal .order-summary {
+  position: static;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 30px;
+  min-width: auto;
+  background: transparent;
 }
 
 .order-summary-header {
@@ -905,13 +1013,28 @@
     gap: 20px;
   }
   
-  .order-summary {
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    border-radius: 20px 20px 0 0;
-    min-width: auto;
+  /* Ajustes para el botón flotante en móviles */
+  .floating-order-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    font-size: 1rem;
+  }
+  
+  /* Modal responsive en móviles */
+  .order-summary-overlay {
+    padding: 10px;
+  }
+  
+  .order-summary-modal {
+    max-height: 90vh;
+    width: 100%;
+    margin: 0;
+  }
+  
+  .order-summary-modal .order-summary {
+    padding: 20px;
   }
 }
 

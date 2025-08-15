@@ -365,7 +365,6 @@ const ProductModal = ({ isOpen, product, onSave, onCancel }) => {
             <div className="form-group">
               <label htmlFor="price">Precio *</label>
               <div className="price-input">
-                <span className="currency">$</span>
                 <input
                   type="number"
                   id="price"

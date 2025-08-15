@@ -2,19 +2,26 @@ import menuData from '../data/menuData.json';
 
 class MenuService {
   constructor() {
-    // En un demo, trabajamos con los datos en memoria
-    // En producción, esto sería una API real
-    // TEMPORAL: Forzar uso del JSON para debug
-    console.log('=== MENUSERVICE DEBUG ===');
-    const savedData = this.loadFromLocalStorage();
-    if (savedData) {
-      console.log('Datos en localStorage - Promociones:', savedData.promotions?.length || 0);
-    }
-    console.log('Datos en JSON - Promociones:', menuData.promotions.length);
+    // Cargar datos desde el JSON y sincronizar con localStorage para persistencia
+    console.log(' MenuService: Inicializando con datos del JSON');
     
-    this.data = { ...menuData }; // Forzar uso del JSON
+    // Siempre usar los datos del JSON como fuente principal
+    this.data = { ...menuData };
+    
+    // Sincronizar con localStorage para mantener cambios de administración
+    const savedData = this.loadFromLocalStorage();
+    if (savedData && this.isValidMenuData(savedData)) {
+      // Mantener estructura del JSON pero usar datos guardados si existen
+      this.data = {
+        ...menuData, // Estructura base del JSON
+        ...savedData, // Datos modificados en administración
+        categories: menuData.categories, // Siempre usar categorías del JSON
+        promotions: savedData.promotions || menuData.promotions // Promociones actualizadas
+      };
+    }
+    
     this.saveToLocalStorage();
-    console.log('Usando datos del JSON directamente');
+    console.log(` MenuService: ${this.data.items.length} productos y ${this.data.promotions.length} promociones cargados`);
   }
 
   // Cargar datos del localStorage para persistencia en el demo
@@ -35,6 +42,14 @@ class MenuService {
     } catch (error) {
       console.error('Error saving menu data to localStorage:', error);
     }
+  }
+
+  // Validar que los datos tienen la estructura correcta
+  isValidMenuData(data) {
+    return data && 
+           Array.isArray(data.items) && 
+           Array.isArray(data.categories) && 
+           Array.isArray(data.promotions);
   }
 
   // Obtener todas las categorías
@@ -151,6 +166,15 @@ class MenuService {
   resetToOriginal() {
     this.data = { ...menuData };
     this.saveToLocalStorage();
+    return this.data;
+  }
+
+  // Forzar recarga desde JSON (útil para desarrollo y debug)
+  forceReloadFromJSON() {
+    console.log('🔄 Forzando recarga desde menuData.json');
+    this.data = { ...menuData };
+    this.saveToLocalStorage();
+    console.log(`✅ Datos recargados: ${this.data.items.length} productos, ${this.data.promotions.length} promociones`);
     return this.data;
   }
 

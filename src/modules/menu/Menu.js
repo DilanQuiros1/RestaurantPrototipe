@@ -17,6 +17,7 @@ const Menu = ({ onAdminAccess }) => {
   const [isWaiterCallOpen, setIsWaiterCallOpen] = useState(false);
   const [menuData, setMenuData] = useState({});
   const [categories, setCategories] = useState([]);
+  const [showOrderSummary, setShowOrderSummary] = useState(false);
 
   // Función para obtener la imagen correcta (personalizada o predefinida)
   const getProductImage = (product) => {
@@ -117,6 +118,7 @@ const Menu = ({ onAdminAccess }) => {
 
   const handleCheckout = () => {
     if (order.length > 0) {
+      setShowOrderSummary(false); // Cerrar el modal del pedido
       setIsCheckoutModalOpen(true);
     }
   };
@@ -131,7 +133,12 @@ const Menu = ({ onAdminAccess }) => {
       return summary;
     }).join('\n');
 
-    const message = `¡Pedido confirmado!\n\nCliente: ${checkoutData.customerName}\nMesa: ${checkoutData.tableNumber}\n\nResumen:\n${orderSummary}\n\nPronto estará listo.`;
+    const orderTypeText = checkoutData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Aquí';
+    const locationInfo = checkoutData.orderType === 'takeout' 
+      ? 'Recoger en mostrador' 
+      : `Mesa: ${checkoutData.tableNumber}`;
+
+    const message = `¡Pedido confirmado!\n\nCliente: ${checkoutData.customerName}\nTipo: ${orderTypeText}\n${locationInfo}\n\nResumen:\n${orderSummary}\n\nPronto estará listo.`;
     alert(message);
     
     // Cerrar el modal y limpiar el pedido
@@ -265,13 +272,37 @@ const Menu = ({ onAdminAccess }) => {
         ))}
       </div>
 
-      <OrderSummary
-        order={order}
-        onClearOrder={handleClearOrder}
-        onCheckout={handleCheckout}
-        onRemoveItem={handleRemoveItem}
-        onUpdateComments={handleUpdateComments}
-      />
+      {/* Botón flotante para mostrar pedido */}
+      {order.length > 0 && (
+        <button 
+          className="floating-order-btn"
+          onClick={() => setShowOrderSummary(true)}
+          title="Ver mi pedido"
+        >
+          🛒 {order.reduce((sum, item) => sum + item.quantity, 0)}
+        </button>
+      )}
+
+      {/* Order Summary Modal */}
+      {showOrderSummary && (
+        <div className="order-summary-overlay" onClick={() => setShowOrderSummary(false)}>
+          <div className="order-summary-modal" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="close-order-summary"
+              onClick={() => setShowOrderSummary(false)}
+            >
+              ✕
+            </button>
+            <OrderSummary
+              order={order}
+              onClearOrder={handleClearOrder}
+              onCheckout={handleCheckout}
+              onRemoveItem={handleRemoveItem}
+              onUpdateComments={handleUpdateComments}
+            />
+          </div>
+        </div>
+      )}
 
       <CheckoutModal
         isOpen={isCheckoutModalOpen}

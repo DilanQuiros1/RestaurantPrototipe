@@ -5,6 +5,7 @@ import './CheckoutModal.css';
 const CheckoutModal = ({ isOpen, onClose, onConfirm, order }) => {
   const [customerName, setCustomerName] = useState('');
   const [selectedTable, setSelectedTable] = useState(null);
+  const [orderType, setOrderType] = useState('dine-in'); // 'dine-in' or 'takeout'
   const [error, setError] = useState('');
 
   // Simulación de mesas - en una aplicación real esto vendría de una API
@@ -29,14 +30,15 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order }) => {
       return;
     }
     
-    if (!selectedTable) {
+    if (orderType === 'dine-in' && !selectedTable) {
       setError('Por favor selecciona una mesa');
       return;
     }
 
     onConfirm({
       customerName: customerName.trim(),
-      tableNumber: selectedTable,
+      orderType: orderType,
+      tableNumber: orderType === 'dine-in' ? selectedTable : null,
       order: order
     });
   };
@@ -51,6 +53,7 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order }) => {
   const handleClose = () => {
     setCustomerName('');
     setSelectedTable(null);
+    setOrderType('dine-in');
     setError('');
     onClose();
   };
@@ -81,38 +84,73 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order }) => {
           </div>
 
           <div className="form-group">
-            <label>Selecciona una Mesa *</label>
-            <div className="tables-grid">
-              {tables.map((table) => (
-                <div
-                  key={table.id}
-                  className={`table-item ${table.isOccupied ? 'occupied' : 'available'} ${
-                    selectedTable === table.number ? 'selected' : ''
-                  }`}
-                  onClick={() => handleTableSelect(table)}
-                >
-                  <span className="table-number">{table.number}</span>
-                  <span className="table-status">
-                    {table.isOccupied ? 'Ocupada' : 'Disponible'}
-                  </span>
+            <label>Tipo de Pedido *</label>
+            <div className="order-type-selector">
+              <div 
+                className={`order-type-option ${orderType === 'dine-in' ? 'selected' : ''}`}
+                onClick={() => {
+                  setOrderType('dine-in');
+                  setError('');
+                }}
+              >
+                <div className="order-type-icon">🍽️</div>
+                <div className="order-type-text">
+                  <div className="order-type-title">Comer Aquí</div>
+                  <div className="order-type-subtitle">Servicio en mesa</div>
                 </div>
-              ))}
-            </div>
-            <div className="table-legend">
-              <div className="legend-item">
-                <div className="legend-color available"></div>
-                <span>Disponible</span>
               </div>
-              <div className="legend-item">
-                <div className="legend-color occupied"></div>
-                <span>Ocupada</span>
-              </div>
-              <div className="legend-item">
-                <div className="legend-color selected"></div>
-                <span>Seleccionada</span>
+              <div 
+                className={`order-type-option ${orderType === 'takeout' ? 'selected' : ''}`}
+                onClick={() => {
+                  setOrderType('takeout');
+                  setSelectedTable(null);
+                  setError('');
+                }}
+              >
+                <div className="order-type-icon">🥡</div>
+                <div className="order-type-text">
+                  <div className="order-type-title">Para Llevar</div>
+                  <div className="order-type-subtitle">Recoger en mostrador</div>
+                </div>
               </div>
             </div>
           </div>
+
+          {orderType === 'dine-in' && (
+            <div className="form-group">
+              <label>Selecciona una Mesa *</label>
+              <div className="tables-grid">
+                {tables.map((table) => (
+                  <div
+                    key={table.id}
+                    className={`table-item ${table.isOccupied ? 'occupied' : 'available'} ${
+                      selectedTable === table.number ? 'selected' : ''
+                    }`}
+                    onClick={() => handleTableSelect(table)}
+                  >
+                    <span className="table-number">{table.number}</span>
+                    <span className="table-status">
+                      {table.isOccupied ? 'Ocupada' : 'Disponible'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="table-legend">
+                <div className="legend-item">
+                  <div className="legend-color available"></div>
+                  <span>Disponible</span>
+                </div>
+                <div className="legend-item">
+                  <div className="legend-color occupied"></div>
+                  <span>Ocupada</span>
+                </div>
+                <div className="legend-item">
+                  <div className="legend-color selected"></div>
+                  <span>Seleccionada</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {error && <div className="error-message">{error}</div>}
 
