@@ -19,6 +19,8 @@ const Kitchen = () => {
   const getMockOrders = () => [
     {
       id: 1,
+      customerName: 'Dilan Quiros',
+      orderType: 'dine-in',
       tableNumber: 5,
       items: [
         { 
@@ -42,6 +44,8 @@ const Kitchen = () => {
     },
     {
       id: 2,
+      customerName: 'Valeria Arias',
+      orderType: 'dine-in',
       tableNumber: 3,
       items: [
         { 
@@ -66,7 +70,9 @@ const Kitchen = () => {
     },
     {
       id: 3,
-      tableNumber: 8,
+      customerName: 'Gabriel Rodriguez',
+      orderType: 'takeout',
+      tableNumber: null,
       items: [
         { 
           name: 'Pizza Margherita', 

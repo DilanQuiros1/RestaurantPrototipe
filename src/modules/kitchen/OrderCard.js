@@ -71,11 +71,13 @@ const OrderCard = ({ order, onUpdateStatus, allowedActions }) => {
       <div className="order-card-header">
         <div className="order-info">
           <span className="order-number">Pedido #{order.id}</span>
-          <span className="table-number">Mesa {order.tableNumber}</span>
+          <span className="customer-name">👤 {order.customerName}</span>
+          {order.orderType === "dine-in" ? (
+            <span className="table-number">Mesa {order.tableNumber}</span>
+          ) : (
+            <span className="order-type">Para Llevar</span>
+          )}
         </div>
-        {order.priority === "alta" && (
-          <span className="priority-badge">⚡ PRIORIDAD ALTA</span>
-        )}
       </div>
 
       {/* Items del pedido */}
@@ -121,11 +123,11 @@ const OrderCard = ({ order, onUpdateStatus, allowedActions }) => {
         </div>
       </div>
 
-      {/* Total del pedido */}
+      {/* Total del pedido
       <div className="order-total">
         <span className="total-label">Total:</span>
         <span className="total-amount">${order.totalAmount.toFixed(2)}</span>
-      </div>
+      </div> */}
 
       {/* Botón de acción */}
       <div className="order-actions">{getActionButtons()}</div>
