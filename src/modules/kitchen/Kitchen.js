@@ -188,7 +188,7 @@ const Kitchen = () => {
           title="⏳ En Preparación"
           orders={inProgressOrders}
           onUpdateStatus={updateOrderStatus}
-          allowedActions={[ORDER_STATES.READY]}
+          allowedActions={[ORDER_STATES.PENDING, ORDER_STATES.READY]}
           emptyMessage="No hay pedidos en preparación"
         />
 
@@ -196,7 +196,7 @@ const Kitchen = () => {
           title="✅ Listos para Servir"
           orders={readyOrders}
           onUpdateStatus={updateOrderStatus}
-          allowedActions={[ORDER_STATES.DELIVERED]}
+          allowedActions={[ORDER_STATES.IN_PROGRESS, ORDER_STATES.DELIVERED]}
           emptyMessage="No hay pedidos listos"
         />
       </div>

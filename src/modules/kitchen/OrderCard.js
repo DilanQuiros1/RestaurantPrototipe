@@ -1,5 +1,5 @@
-import React from 'react';
-import Button from '../../components/common/Button';
+import React from "react";
+import Button from "../../components/common/Button";
 
 const OrderCard = ({ order, onUpdateStatus, allowedActions }) => {
   // Función para calcular el tiempo transcurrido
@@ -19,48 +19,50 @@ const OrderCard = ({ order, onUpdateStatus, allowedActions }) => {
 
   // Función para obtener la clase CSS según la prioridad y tiempo
   const getCardClassName = () => {
-    let className = 'order-card';
-    
-    if (order.priority === 'alta') {
-      className += ' high-priority';
+    let className = "order-card";
+
+    if (order.priority === "alta") {
+      className += " high-priority";
     }
-    
+
     // Marcar como urgente si lleva mucho tiempo esperando
     const waitingTime = getWaitingTime(order.orderTime);
     if (waitingTime > 20) {
-      className += ' urgent';
+      className += " urgent";
     }
-    
+
     return className;
   };
 
   // Función para obtener el texto del botón según las acciones permitidas
-  const getActionButton = () => {
+  // Función para obtener el texto del botón según las acciones permitidas
+  const getActionButtons = () => {
     if (!allowedActions || allowedActions.length === 0) return null;
-    
-    const action = allowedActions[0]; // Por simplicidad, tomamos la primera acción
-    
+
     const actionTexts = {
-      'en_preparacion': 'Iniciar Preparación',
-      'listo': 'Marcar como Listo',
-      'entregado': 'Marcar como Entregado'
+      pendiente: "Devolver a Pendiente",
+      en_preparacion: "Devolver a Preparación",
+      listo: "Marcar como Listo",
+      entregado: "Marcar como Entregado",
     };
-    
+
     const actionVariants = {
-      'en_preparacion': 'primary',
-      'listo': 'success',
-      'entregado': 'secondary'
+      pendiente: "warning",
+      en_preparacion: "primary",
+      listo: "success",
+      entregado: "secondary",
     };
-    
-    return (
+
+    return allowedActions.map((action) => (
       <Button
+        key={action}
         variant={actionVariants[action]}
         onClick={() => onUpdateStatus(order.id, action)}
         className="action-button"
       >
         {actionTexts[action]}
       </Button>
-    );
+    ));
   };
 
   return (
@@ -71,7 +73,7 @@ const OrderCard = ({ order, onUpdateStatus, allowedActions }) => {
           <span className="order-number">Pedido #{order.id}</span>
           <span className="table-number">Mesa {order.tableNumber}</span>
         </div>
-        {order.priority === 'alta' && (
+        {order.priority === "alta" && (
           <span className="priority-badge">⚡ PRIORIDAD ALTA</span>
         )}
       </div>
@@ -99,16 +101,20 @@ const OrderCard = ({ order, onUpdateStatus, allowedActions }) => {
       <div className="order-timing">
         <div className="timing-info">
           <span className="timing-label">Pedido hace:</span>
-          <span className="timing-value">{getWaitingTime(order.orderTime)} min</span>
+          <span className="timing-value">
+            {getWaitingTime(order.orderTime)} min
+          </span>
         </div>
-        
+
         {order.startTime && (
           <div className="timing-info">
             <span className="timing-label">En cocina:</span>
-            <span className="timing-value">{getElapsedTime(order.startTime)} min</span>
+            <span className="timing-value">
+              {getElapsedTime(order.startTime)} min
+            </span>
           </div>
         )}
-        
+
         <div className="timing-info">
           <span className="timing-label">Tiempo estimado:</span>
           <span className="timing-value">{order.estimatedTime} min</span>
@@ -122,16 +128,14 @@ const OrderCard = ({ order, onUpdateStatus, allowedActions }) => {
       </div>
 
       {/* Botón de acción */}
-      <div className="order-actions">
-        {getActionButton()}
-      </div>
+      <div className="order-actions">{getActionButtons()}</div>
 
       {/* Indicador de estado */}
       <div className="order-status-indicator">
-        {order.status === 'pendiente' && '🔄 Pendiente'}
-        {order.status === 'en_preparacion' && '⏳ En Preparación'}
-        {order.status === 'listo' && '✅ Listo'}
-        {order.status === 'entregado' && '🚀 Entregado'}
+        {order.status === "pendiente" && "🔄 Pendiente"}
+        {order.status === "en_preparacion" && "⏳ En Preparación"}
+        {order.status === "listo" && "✅ Listo"}
+        {order.status === "entregado" && "🚀 Entregado"}
       </div>
     </div>
   );

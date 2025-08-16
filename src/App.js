@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Menu } from './modules/menu';
 import { Kitchen } from './modules/kitchen';
 import { Administration } from './modules/administration';
+import { Dashboard } from './modules/analytics';
 import './App.css';
 
 function App() {
@@ -27,6 +28,8 @@ function App() {
       case 'administration':
       case 'admin': // Mantener compatibilidad con sistema discreto
         return <Administration />;
+      case 'analytics':
+        return <Dashboard />;
       default:
         return <Menu onAdminAccess={handleAdminAccess} />;
     }
@@ -65,6 +68,14 @@ function App() {
               <span className="nav-icon">⚙️</span>
               <span className="nav-label">Administración</span>
             </button>
+            
+            <button 
+              className={`nav-button ${currentView === 'analytics' ? 'active' : ''}`}
+              onClick={() => setCurrentView('analytics')}
+            >
+              <span className="nav-icon">📊</span>
+              <span className="nav-label">Analytics</span>
+            </button>
           </div>
         </nav>
       )}
@@ -85,8 +96,11 @@ function App() {
           </div>
         )}
         
+        {/* Vista de analytics */}
+        {currentView === 'analytics' && <Dashboard />}
+        
         {/* Otras vistas */}
-        {currentView !== 'admin' && currentView !== 'administration' && renderCurrentView()}
+        {currentView !== 'admin' && currentView !== 'administration' && currentView !== 'analytics' && renderCurrentView()}
       </main>
     </div>
   );
