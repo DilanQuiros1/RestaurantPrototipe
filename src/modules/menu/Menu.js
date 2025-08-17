@@ -4,6 +4,7 @@ import OrderSummary from './OrderSummary';
 import CheckoutModal from './CheckoutModal';
 import AdminLoginModal from './AdminLoginModal';
 import WaiterCallModal from './WaiterCallModal';
+import CustomerRegistrationModal from '../loyalty/CustomerRegistrationModal';
 import { getImageByDishName } from './menuImages';
 import menuService from '../../services/menuService';
 import imageService from '../../services/imageService';
@@ -15,6 +16,7 @@ const Menu = ({ onAdminAccess }) => {
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [isWaiterCallOpen, setIsWaiterCallOpen] = useState(false);
+  const [isCustomerRegistrationOpen, setIsCustomerRegistrationOpen] = useState(false);
   const [menuData, setMenuData] = useState({});
   const [categories, setCategories] = useState([]);
   const [showOrderSummary, setShowOrderSummary] = useState(false);
@@ -184,6 +186,11 @@ const Menu = ({ onAdminAccess }) => {
     console.log('Llamada de mesero enviada:', callData);
   };
 
+  const handleCustomerRegistrationSuccess = (customer) => {
+    console.log('Cliente registrado exitosamente:', customer);
+    // Aquí podrías agregar lógica adicional como mostrar el ID del cliente en la interfaz
+  };
+
   // TEMPORAL: Función para resetear datos
   const resetData = () => {
     localStorage.removeItem('restaurantMenuData');
@@ -205,6 +212,15 @@ const Menu = ({ onAdminAccess }) => {
 
   return (
     <div className="menu-container">
+      {/* Botón de registro de clientes - esquina superior izquierda */}
+      <button 
+        className="customer-registration-btn"
+        onClick={() => setIsCustomerRegistrationOpen(true)}
+        title="Programa de Fidelización"
+      >
+        🎯 Únete
+      </button>
+
       {/* Botón discreto de administración */}
       <button 
         className="admin-access-btn"
@@ -299,6 +315,8 @@ const Menu = ({ onAdminAccess }) => {
               onCheckout={handleCheckout}
               onRemoveItem={handleRemoveItem}
               onUpdateComments={handleUpdateComments}
+              onOpenCustomerRegistration={() => setIsCustomerRegistrationOpen(true)}
+              onCloseOrderSummary={() => setShowOrderSummary(false)}
             />
           </div>
         </div>
@@ -321,6 +339,12 @@ const Menu = ({ onAdminAccess }) => {
         isOpen={isWaiterCallOpen}
         onClose={() => setIsWaiterCallOpen(false)}
         onCallWaiter={handleWaiterCall}
+      />
+
+      <CustomerRegistrationModal
+        isOpen={isCustomerRegistrationOpen}
+        onClose={() => setIsCustomerRegistrationOpen(false)}
+        onRegistrationSuccess={handleCustomerRegistrationSuccess}
       />
     </div>
   );

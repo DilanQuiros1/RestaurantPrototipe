@@ -7,6 +7,31 @@
   position: relative;
 }
 
+/* Botón de registro de clientes - esquina superior izquierda */
+.customer-registration-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 25px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  white-space: nowrap;
+}
+
+.customer-registration-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
 /* Botón discreto de administración */
 .admin-access-btn {
   position: fixed;
@@ -1035,6 +1060,228 @@
   
   .order-summary-modal .order-summary {
     padding: 20px;
+  }
+}
+
+/* Estilos para Loyalty Program en OrderSummary */
+.loyalty-section {
+  margin-top: 20px;
+  border-top: 2px solid #ecf0f1;
+  padding-top: 15px;
+}
+
+.loyalty-toggle-btn {
+  width: 100%;
+  padding: 12px 15px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.loyalty-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.loyalty-content {
+  margin-top: 15px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+  border: 2px solid #dee2e6;
+}
+
+.loyalty-input-section {
+  margin-bottom: 15px;
+}
+
+.loyalty-input-section label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.cedula-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.cedula-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 2px solid #ced4da;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.cedula-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.validate-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.validate-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+  transform: translateY(-1px);
+}
+
+.validate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loyalty-error {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #f5c6cb;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.register-link-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 8px;
+  display: block;
+  transition: color 0.2s;
+}
+
+.register-link-btn:hover {
+  color: #764ba2;
+  text-decoration: none;
+}
+
+.customer-info {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 15px;
+  border: 2px solid #d4edda;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.1);
+}
+
+.customer-details h4 {
+  color: #155724;
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.customer-details p {
+  margin: 8px 0;
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.current-points {
+  background: linear-gradient(135deg, #ffc107, #ff8c00);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+.points-calculation {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #dee2e6;
+}
+
+.points-to-earn, .total-points-after {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 8px 0;
+}
+
+.points-to-earn {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.total-points-after {
+  color: #495057;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-top: 1px solid #dee2e6;
+  padding-top: 12px;
+  margin-top: 15px;
+}
+
+.points-value {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
+  min-width: 60px;
+  text-align: center;
+}
+
+.total-points-after .points-value {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+  font-size: 1rem;
+  padding: 8px 18px;
+}
+
+/* Responsive para loyalty section */
+@media (max-width: 768px) {
+  .cedula-input-group {
+    flex-direction: column;
+  }
+  
+  .validate-btn {
+    width: 100%;
+  }
+  
+  .points-to-earn, .total-points-after {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+  
+  .customer-info {
+    padding: 15px;
   }
 }
 
