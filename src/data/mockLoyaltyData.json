@@ -1,0 +1,503 @@
+{
+  "customers": [
+    {
+      "id": "1",
+      "cedula": "123456789",
+      "nombre": "María González",
+      "telefono": "88887777",
+      "registrationDate": "2024-01-15T10:30:00.000Z",
+      "points": 245,
+      "redeemedPoints": 50,
+      "totalSpent": 24500,
+      "orderCount": 12,
+      "lastOrderDate": "2024-08-15T19:20:00.000Z",
+      "segment": "frecuente"
+    },
+    {
+      "id": "2",
+      "cedula": "987654321",
+      "nombre": "Carlos Rodríguez",
+      "telefono": "77776666",
+      "registrationDate": "2024-02-20T14:15:00.000Z",
+      "points": 580,
+      "redeemedPoints": 120,
+      "totalSpent": 58000,
+      "orderCount": 28,
+      "lastOrderDate": "2024-08-18T18:45:00.000Z",
+      "segment": "vip"
+    },
+    {
+      "id": "3",
+      "cedula": "456789123",
+      "nombre": "Ana Martínez",
+      "telefono": "66665555",
+      "registrationDate": "2024-03-10T09:45:00.000Z",
+      "points": 75,
+      "redeemedPoints": 25,
+      "totalSpent": 7500,
+      "orderCount": 5,
+      "lastOrderDate": "2024-08-10T12:30:00.000Z",
+      "segment": "activo"
+    },
+    {
+      "id": "4",
+      "cedula": "789123456",
+      "nombre": "Luis Fernández",
+      "telefono": "55554444",
+      "registrationDate": "2024-04-05T16:20:00.000Z",
+      "points": 1250,
+      "redeemedPoints": 300,
+      "totalSpent": 125000,
+      "orderCount": 45,
+      "lastOrderDate": "2024-08-18T17:15:00.000Z",
+      "segment": "vip"
+    },
+    {
+      "id": "5",
+      "cedula": "321654987",
+      "nombre": "Sofia Vargas",
+      "telefono": "44443333",
+      "registrationDate": "2024-05-12T11:10:00.000Z",
+      "points": 0,
+      "redeemedPoints": 0,
+      "totalSpent": 0,
+      "orderCount": 0,
+      "lastOrderDate": null,
+      "segment": "nuevo"
+    },
+    {
+      "id": "6",
+      "cedula": "654987321",
+      "nombre": "Roberto Jiménez",
+      "telefono": "33332222",
+      "registrationDate": "2024-01-08T13:25:00.000Z",
+      "points": 890,
+      "redeemedPoints": 200,
+      "totalSpent": 89000,
+      "orderCount": 35,
+      "lastOrderDate": "2024-08-17T20:10:00.000Z",
+      "segment": "vip"
+    },
+    {
+      "id": "7",
+      "cedula": "147258369",
+      "nombre": "Patricia Morales",
+      "telefono": "22221111",
+      "registrationDate": "2024-06-18T15:40:00.000Z",
+      "points": 165,
+      "redeemedPoints": 40,
+      "totalSpent": 16500,
+      "orderCount": 8,
+      "lastOrderDate": "2024-08-16T14:20:00.000Z",
+      "segment": "frecuente"
+    },
+    {
+      "id": "8",
+      "cedula": "963852741",
+      "nombre": "Diego Herrera",
+      "telefono": "11119999",
+      "registrationDate": "2024-07-02T08:55:00.000Z",
+      "points": 45,
+      "redeemedPoints": 0,
+      "totalSpent": 4500,
+      "orderCount": 3,
+      "lastOrderDate": "2024-08-12T16:30:00.000Z",
+      "segment": "activo"
+    },
+    {
+      "id": "9",
+      "cedula": "852741963",
+      "nombre": "Carmen Solís",
+      "telefono": "99998888",
+      "registrationDate": "2024-02-28T12:05:00.000Z",
+      "points": 320,
+      "redeemedPoints": 80,
+      "totalSpent": 32000,
+      "orderCount": 16,
+      "lastOrderDate": "2024-08-14T19:45:00.000Z",
+      "segment": "frecuente"
+    },
+    {
+      "id": "10",
+      "cedula": "741963852",
+      "nombre": "Fernando Castro",
+      "telefono": "88889999",
+      "registrationDate": "2024-03-22T10:15:00.000Z",
+      "points": 0,
+      "redeemedPoints": 0,
+      "totalSpent": 0,
+      "orderCount": 0,
+      "lastOrderDate": null,
+      "segment": "nuevo"
+    },
+    {
+      "id": "11",
+      "cedula": "159753486",
+      "nombre": "Gabriela Ramírez",
+      "telefono": "77778888",
+      "registrationDate": "2024-04-30T17:30:00.000Z",
+      "points": 680,
+      "redeemedPoints": 150,
+      "totalSpent": 68000,
+      "orderCount": 22,
+      "lastOrderDate": "2024-08-18T13:20:00.000Z",
+      "segment": "vip"
+    },
+    {
+      "id": "12",
+      "cedula": "486159753",
+      "nombre": "Andrés Villalobos",
+      "telefono": "66667777",
+      "registrationDate": "2024-05-25T14:50:00.000Z",
+      "points": 95,
+      "redeemedPoints": 20,
+      "totalSpent": 9500,
+      "orderCount": 6,
+      "lastOrderDate": "2024-08-11T15:40:00.000Z",
+      "segment": "activo"
+    },
+    {
+      "id": "13",
+      "cedula": "753486159",
+      "nombre": "Isabella Mora",
+      "telefono": "55556666",
+      "registrationDate": "2024-06-08T09:20:00.000Z",
+      "points": 420,
+      "redeemedPoints": 100,
+      "totalSpent": 42000,
+      "orderCount": 18,
+      "lastOrderDate": "2024-08-16T11:15:00.000Z",
+      "segment": "frecuente"
+    },
+    {
+      "id": "14",
+      "cedula": "357159486",
+      "nombre": "Javier Montero",
+      "telefono": "44445555",
+      "registrationDate": "2024-07-15T16:45:00.000Z",
+      "points": 30,
+      "redeemedPoints": 0,
+      "totalSpent": 3000,
+      "orderCount": 2,
+      "lastOrderDate": "2024-08-08T18:25:00.000Z",
+      "segment": "activo"
+    },
+    {
+      "id": "15",
+      "cedula": "951357486",
+      "nombre": "Valeria Esquivel",
+      "telefono": "33334444",
+      "registrationDate": "2024-01-30T11:35:00.000Z",
+      "points": 1150,
+      "redeemedPoints": 400,
+      "totalSpent": 115000,
+      "orderCount": 52,
+      "lastOrderDate": "2024-08-18T16:50:00.000Z",
+      "segment": "vip"
+    }
+  ],
+  "loyaltyTransactions": [
+    {
+      "id": "lt_1",
+      "customerId": "1",
+      "type": "earned",
+      "points": 15,
+      "amount": 1500,
+      "orderId": "ord_123",
+      "date": "2024-08-15T19:20:00.000Z",
+      "description": "Puntos ganados por compra"
+    },
+    {
+      "id": "lt_2",
+      "customerId": "2",
+      "type": "redeemed",
+      "points": -50,
+      "amount": 250,
+      "orderId": "ord_124",
+      "date": "2024-08-18T18:45:00.000Z",
+      "description": "Descuento aplicado con puntos"
+    },
+    {
+      "id": "lt_3",
+      "customerId": "4",
+      "type": "earned",
+      "points": 25,
+      "amount": 2500,
+      "orderId": "ord_125",
+      "date": "2024-08-18T17:15:00.000Z",
+      "description": "Puntos ganados por compra"
+    },
+    {
+      "id": "lt_4",
+      "customerId": "11",
+      "type": "redeemed",
+      "points": -30,
+      "amount": 150,
+      "orderId": "ord_126",
+      "date": "2024-08-18T13:20:00.000Z",
+      "description": "Descuento aplicado con puntos"
+    },
+    {
+      "id": "lt_5",
+      "customerId": "15",
+      "type": "earned",
+      "points": 35,
+      "amount": 3500,
+      "orderId": "ord_127",
+      "date": "2024-08-18T16:50:00.000Z",
+      "description": "Puntos ganados por compra"
+    }
+  ],
+  "monthlyMetrics": [
+    {
+      "month": "Enero",
+      "year": 2024,
+      "pointsIssued": 4250,
+      "pointsRedeemed": 850,
+      "newCustomers": 45,
+      "activeCustomers": 120,
+      "totalRevenue": 425000,
+      "loyaltyRevenue": 380000,
+      "redemptionCost": 4250,
+      "utilizationRate": 20
+    },
+    {
+      "month": "Febrero",
+      "year": 2024,
+      "pointsIssued": 3890,
+      "pointsRedeemed": 920,
+      "newCustomers": 38,
+      "activeCustomers": 135,
+      "totalRevenue": 389000,
+      "loyaltyRevenue": 350000,
+      "redemptionCost": 4600,
+      "utilizationRate": 24
+    },
+    {
+      "month": "Marzo",
+      "year": 2024,
+      "pointsIssued": 5120,
+      "pointsRedeemed": 1150,
+      "newCustomers": 52,
+      "activeCustomers": 158,
+      "totalRevenue": 512000,
+      "loyaltyRevenue": 460000,
+      "redemptionCost": 5750,
+      "utilizationRate": 22
+    },
+    {
+      "month": "Abril",
+      "year": 2024,
+      "pointsIssued": 4680,
+      "pointsRedeemed": 1280,
+      "newCustomers": 41,
+      "activeCustomers": 172,
+      "totalRevenue": 468000,
+      "loyaltyRevenue": 420000,
+      "redemptionCost": 6400,
+      "utilizationRate": 27
+    },
+    {
+      "month": "Mayo",
+      "year": 2024,
+      "pointsIssued": 5890,
+      "pointsRedeemed": 1450,
+      "newCustomers": 48,
+      "activeCustomers": 185,
+      "totalRevenue": 589000,
+      "loyaltyRevenue": 530000,
+      "redemptionCost": 7250,
+      "utilizationRate": 25
+    },
+    {
+      "month": "Junio",
+      "year": 2024,
+      "pointsIssued": 6320,
+      "pointsRedeemed": 1680,
+      "newCustomers": 55,
+      "activeCustomers": 198,
+      "totalRevenue": 632000,
+      "loyaltyRevenue": 570000,
+      "redemptionCost": 8400,
+      "utilizationRate": 27
+    },
+    {
+      "month": "Julio",
+      "year": 2024,
+      "pointsIssued": 7150,
+      "pointsRedeemed": 1920,
+      "newCustomers": 62,
+      "activeCustomers": 215,
+      "totalRevenue": 715000,
+      "loyaltyRevenue": 640000,
+      "redemptionCost": 9600,
+      "utilizationRate": 27
+    },
+    {
+      "month": "Agosto",
+      "year": 2024,
+      "pointsIssued": 5680,
+      "pointsRedeemed": 1350,
+      "newCustomers": 38,
+      "activeCustomers": 228,
+      "totalRevenue": 568000,
+      "loyaltyRevenue": 510000,
+      "redemptionCost": 6750,
+      "utilizationRate": 24
+    }
+  ],
+  "customerSegments": {
+    "nuevos": 45,
+    "activos": 78,
+    "frecuentes": 65,
+    "vip": 40
+  },
+  "programConfig": {
+    "isActive": true,
+    "pointsPerAmount": 1,
+    "amountPerPoint": 100,
+    "pointValue": 5,
+    "programName": "Club Sabor Premium",
+    "description": "Acumula puntos con cada compra y disfruta de descuentos exclusivos en tu restaurante favorito",
+    "minPointsToRedeem": 10,
+    "maxPointsPerTransaction": 1000,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-08-18T19:53:00.000Z"
+  },
+  "recentActivity": [
+    {
+      "id": "ra_1",
+      "customerId": "15",
+      "customerName": "Valeria Esquivel",
+      "action": "earned",
+      "points": 35,
+      "amount": 3500,
+      "date": "2024-08-18T16:50:00.000Z",
+      "description": "Compra de Filete de Res + Bebidas"
+    },
+    {
+      "id": "ra_2",
+      "customerId": "2",
+      "customerName": "Carlos Rodríguez",
+      "action": "redeemed",
+      "points": -50,
+      "amount": 250,
+      "date": "2024-08-18T18:45:00.000Z",
+      "description": "Descuento aplicado en Pizza Margherita"
+    },
+    {
+      "id": "ra_3",
+      "customerId": "4",
+      "customerName": "Luis Fernández",
+      "action": "earned",
+      "points": 25,
+      "amount": 2500,
+      "date": "2024-08-18T17:15:00.000Z",
+      "description": "Compra de Hamburguesa Clásica + Papas"
+    },
+    {
+      "id": "ra_4",
+      "customerId": "11",
+      "customerName": "Gabriela Ramírez",
+      "action": "redeemed",
+      "points": -30,
+      "amount": 150,
+      "date": "2024-08-18T13:20:00.000Z",
+      "description": "Descuento en Pasta Carbonara"
+    },
+    {
+      "id": "ra_5",
+      "customerId": "1",
+      "customerName": "María González",
+      "action": "earned",
+      "points": 15,
+      "amount": 1500,
+      "date": "2024-08-15T19:20:00.000Z",
+      "description": "Compra de Ensalada César"
+    }
+  ],
+  "topCustomers": [
+    {
+      "id": "15",
+      "nombre": "Valeria Esquivel",
+      "points": 1150,
+      "totalSpent": 115000,
+      "orderCount": 52,
+      "avgOrderValue": 2211,
+      "segment": "vip"
+    },
+    {
+      "id": "6",
+      "nombre": "Roberto Jiménez",
+      "points": 890,
+      "totalSpent": 89000,
+      "orderCount": 35,
+      "avgOrderValue": 2543,
+      "segment": "vip"
+    },
+    {
+      "id": "11",
+      "nombre": "Gabriela Ramírez",
+      "points": 680,
+      "totalSpent": 68000,
+      "orderCount": 22,
+      "avgOrderValue": 3091,
+      "segment": "vip"
+    },
+    {
+      "id": "2",
+      "nombre": "Carlos Rodríguez",
+      "points": 580,
+      "totalSpent": 58000,
+      "orderCount": 28,
+      "avgOrderValue": 2071,
+      "segment": "vip"
+    },
+    {
+      "id": "13",
+      "nombre": "Isabella Mora",
+      "points": 420,
+      "totalSpent": 42000,
+      "orderCount": 18,
+      "avgOrderValue": 2333,
+      "segment": "frecuente"
+    }
+  ],
+  "redemptionHistory": [
+    {
+      "date": "2024-08-18",
+      "totalRedemptions": 4,
+      "pointsRedeemed": 160,
+      "valueRedeemed": 800,
+      "avgRedemption": 40
+    },
+    {
+      "date": "2024-08-17",
+      "totalRedemptions": 6,
+      "pointsRedeemed": 240,
+      "valueRedeemed": 1200,
+      "avgRedemption": 40
+    },
+    {
+      "date": "2024-08-16",
+      "totalRedemptions": 8,
+      "pointsRedeemed": 320,
+      "valueRedeemed": 1600,
+      "avgRedemption": 40
+    },
+    {
+      "date": "2024-08-15",
+      "totalRedemptions": 5,
+      "pointsRedeemed": 200,
+      "valueRedeemed": 1000,
+      "avgRedemption": 40
+    },
+    {
+      "date": "2024-08-14",
+      "totalRedemptions": 7,
+      "pointsRedeemed": 280,
+      "valueRedeemed": 1400,
+      "avgRedemption": 40
+    }
+  ]
+}

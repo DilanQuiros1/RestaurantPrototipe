@@ -108,8 +108,7 @@ const LoyaltyAnalytics = () => {
   const segmentationData = segmentation ? [
     { name: 'Nuevos', value: segmentation.nuevos, color: '#8884d8' },
     { name: 'Activos', value: segmentation.activos, color: '#82ca9d' },
-    { name: 'Frecuentes', value: segmentation.frecuentes, color: '#ffc658' },
-    { name: 'VIP', value: segmentation.vip, color: '#ff7300' }
+    { name: 'Frecuentes', value: segmentation.frecuentes, color: '#ffc658' }
   ] : [];
 
   return (
@@ -307,14 +306,14 @@ const LoyaltyAnalytics = () => {
 
               <Box sx={{ mb: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">Engagement de Clientes</Typography>
+                  <Typography variant="body2">Participación de Clientes</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                    {analytics.customerEngagement}%
+                    {analytics.participacionClientes}%
                   </Typography>
                 </Box>
                 <LinearProgress 
                   variant="determinate" 
-                  value={analytics.customerEngagement} 
+                  value={analytics.participacionClientes} 
                   sx={{ 
                     height: 8, 
                     borderRadius: 4,
@@ -394,13 +393,13 @@ const LoyaltyAnalytics = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} lg={4}>
-          <Card sx={{ height: '100%' }}>
+        <Grid item xs={12} lg={6}>
+          <Card sx={{ height: '100%', width: '30em'}}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Segmentación de Clientes
               </Typography>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={350}>
                 <PieChart>
                   <Pie
                     data={segmentationData}
@@ -408,7 +407,7 @@ const LoyaltyAnalytics = () => {
                     cy="50%"
                     labelLine={false}
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
+                    outerRadius={120}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -417,6 +416,7 @@ const LoyaltyAnalytics = () => {
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [formatNumber(value), 'Clientes']} />
+                  <Legend />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -540,9 +540,9 @@ const LoyaltyAnalytics = () => {
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Typography variant="body2">
-                    <strong>Engagement:</strong> {analytics.customerEngagement}% de clientes activos
+                    <strong>Participación clientes activos:</strong> {analytics.customerEngagement}% de clientes activos
                   </Typography>
-                  <Typography variant="body2">
+                  <Typography variant="body2">    
                     <strong>Valor promedio canje:</strong> {formatCurrency(analytics.averageRedemptionValue)}
                   </Typography>
                   <Typography variant="body2">
