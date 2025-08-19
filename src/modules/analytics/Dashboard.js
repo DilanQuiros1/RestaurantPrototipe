@@ -25,12 +25,14 @@ import {
   FilterList as FilterListIcon,
   TrendingUp as TrendingUpIcon,
   Restaurant as RestaurantIcon,
+  Stars as StarsIcon,
 } from "@mui/icons-material";
 import KPISection from "./KPISection";
 import Charts from "./Charts";
 import ReportsTable from "./ReportsTable";
 import Filters from "./Filters";
 import ExportButtons from "./ExportButtons";
+import LoyaltyAnalytics from "./LoyaltyAnalytics";
 import {
   generateMockData,
   calculateKPIs,
@@ -182,6 +184,7 @@ const Dashboard = () => {
   const menuItems = [
     { id: "dashboard", text: "Dashboard", icon: <DashboardIcon /> },
     { id: "analytics", text: "Análisis", icon: <AssessmentIcon /> },
+    { id: "loyalty", text: "Programa Lealtad", icon: <StarsIcon /> },
     { id: "reports", text: "Reportes", icon: <TableChartIcon /> },
     { id: "trends", text: "Tendencias", icon: <TrendingUpIcon /> },
     { id: "export", text: "Exportar", icon: <GetAppIcon /> },
@@ -242,6 +245,8 @@ const Dashboard = () => {
             </Box>
           </>
         );
+      case "loyalty":
+        return <LoyaltyAnalytics />;
       case "reports":
         return (
           <>

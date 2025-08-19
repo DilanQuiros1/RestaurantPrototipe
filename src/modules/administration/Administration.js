@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import MenuManagement from './MenuManagement';
 import TableManagement from './TableManagement';
 import PromotionsManagement from './PromotionsManagement';
+import LoyaltyProgramManagement from './LoyaltyProgramManagement';
 import Cashier from '../cashier/Cashier';
 import './Administration.css';
 
@@ -11,6 +12,7 @@ const Administration = () => {
   const tabs = [
     { id: 'menu', label: 'Gestión de Menú', icon: '🍽️' },
     { id: 'promotions', label: 'Promociones', icon: '🎉' },
+    { id: 'loyalty', label: 'Programa de Lealtad', icon: '🎯' },
     { id: 'tables', label: 'Gestión de Mesas', icon: '🪑' },
     { id: 'cashier', label: 'Caja', icon: '💳' }
   ];
@@ -38,6 +40,7 @@ const Administration = () => {
       <div className="administration-content">
         {activeTab === 'menu' && <MenuManagement />}
         {activeTab === 'promotions' && <PromotionsManagement />}
+        {activeTab === 'loyalty' && <LoyaltyProgramManagement />}
         {activeTab === 'tables' && <TableManagement />}
         {activeTab === 'cashier' && <Cashier />}
       </div>
