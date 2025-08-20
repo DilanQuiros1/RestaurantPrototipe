@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Button from '../../components/common/Button';
 import './CheckoutModal.css';
 
-const CheckoutModal = ({ isOpen, onClose, onConfirm, order }) => {
+const CheckoutModal = ({ isOpen, onClose, onConfirm, order, menuType = 'internal' }) => {
   const [customerName, setCustomerName] = useState('');
   const [selectedTable, setSelectedTable] = useState(null);
   const [orderType, setOrderType] = useState('dine-in'); // 'dine-in' or 'takeout'
@@ -30,7 +30,8 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order }) => {
       return;
     }
     
-    if (orderType === 'dine-in' && !selectedTable) {
+    // Solo validar mesa si es menú interno y tipo dine-in
+    if (menuType === 'internal' && orderType === 'dine-in' && !selectedTable) {
       setError('Por favor selecciona una mesa');
       return;
     }
@@ -38,7 +39,7 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order }) => {
     onConfirm({
       customerName: customerName.trim(),
       orderType: orderType,
-      tableNumber: orderType === 'dine-in' ? selectedTable : null,
+      tableNumber: (menuType === 'internal' && orderType === 'dine-in') ? selectedTable : null,
       order: order
     });
   };
@@ -64,13 +65,21 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order }) => {
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h2>Finalizar Pedido</h2>
+          <h2>
+            {menuType === 'digital' ? '📱 Enviar Pedido por WhatsApp' : 'Finalizar Pedido'}
+          </h2>
           <button className="modal-close" onClick={handleClose}>
             ✕
           </button>
         </div>
 
         <div className="modal-body">
+          {menuType === 'digital' && (
+            <div className="digital-info-banner">
+              <p>📱 Tu pedido será enviado al restaurante por WhatsApp para verificación</p>
+            </div>
+          )}
+          
           <div className="form-group">
             <label htmlFor="customerName">Nombre del Cliente *</label>
             <input
@@ -96,7 +105,9 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order }) => {
                 <div className="order-type-icon">🍽️</div>
                 <div className="order-type-text">
                   <div className="order-type-title">Comer Aquí</div>
-                  <div className="order-type-subtitle">Servicio en mesa</div>
+                  <div className="order-type-subtitle">
+                    {menuType === 'digital' ? 'Reservar mesa al llegar' : 'Servicio en mesa'}
+                  </div>
                 </div>
               </div>
               <div 
@@ -110,13 +121,15 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order }) => {
                 <div className="order-type-icon">🥡</div>
                 <div className="order-type-text">
                   <div className="order-type-title">Para Llevar</div>
-                  <div className="order-type-subtitle">Recoger en mostrador</div>
+                  <div className="order-type-subtitle">
+                    {menuType === 'digital' ? 'El restaurante te contactará para coordinar' : 'Recoger en mostrador'}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {orderType === 'dine-in' && (
+          {orderType === 'dine-in' && menuType === 'internal' && (
             <div className="form-group">
               <label>Selecciona una Mesa *</label>
               <div className="tables-grid">
@@ -180,7 +193,7 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order }) => {
             Cancelar
           </Button>
           <Button variant="primary" onClick={handleConfirm}>
-            Finalizar Pedido
+            {menuType === 'digital' ? '📱 Enviar por WhatsApp' : 'Finalizar Pedido'}
           </Button>
         </div>
       </div>

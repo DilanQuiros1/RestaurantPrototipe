@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu } from './modules/menu';
 import { Kitchen } from './modules/kitchen';
 import { Administration } from './modules/administration';
@@ -8,6 +8,7 @@ import './App.css';
 function App() {
   // Estado para manejar la vista actual
   const [currentView, setCurrentView] = useState('menu');
+  const [menuType, setMenuType] = useState('internal'); // 'internal' or 'digital'
 
   // Funciones para navegación discreta (mantener compatibilidad con sistema anterior)
   const handleAdminAccess = () => {
@@ -18,11 +19,36 @@ function App() {
     setCurrentView('menu');
   };
 
+  // Detectar tipo de menú basado en URL
+  useEffect(() => {
+    const updateMenuType = () => {
+      const path = window.location.pathname;
+      if (path.includes('/solrestaurante/internal')) {
+        setMenuType('internal');
+      } else if (path.includes('/solrestaurante/digital')) {
+        setMenuType('digital');
+      } else {
+        // Por defecto, usar interno
+        setMenuType('internal');
+      }
+    };
+
+    updateMenuType();
+
+    // Escuchar cambios en la URL
+    const handlePopState = () => {
+      updateMenuType();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Función para renderizar el componente actual
   const renderCurrentView = () => {
     switch (currentView) {
       case 'menu':
-        return <Menu onAdminAccess={handleAdminAccess} />;
+        return <Menu onAdminAccess={handleAdminAccess} menuType={menuType} />;
       case 'kitchen':
         return <Kitchen />;
       case 'administration':
@@ -31,14 +57,14 @@ function App() {
       case 'analytics':
         return <Dashboard />;
       default:
-        return <Menu onAdminAccess={handleAdminAccess} />;
+        return <Menu onAdminAccess={handleAdminAccess} menuType={menuType} />;
     }
   };
 
   return (
     <div className="App">
-      {/* Navegación principal entre módulos - solo visible cuando no está en vista de menú */}
-      {currentView !== 'menu' && (
+      {/* Navegación principal entre módulos - solo visible cuando no está en vista de menú Y es menú interno */}
+      {currentView !== 'menu' && menuType === 'internal' && (
         <nav className="app-navigation">
           {/* <div className="nav-brand">
             <h1>🍽️ RestaurantApp</h1>

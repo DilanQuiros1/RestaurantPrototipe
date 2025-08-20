@@ -8,9 +8,10 @@ import CustomerRegistrationModal from '../loyalty/CustomerRegistrationModal';
 import { getImageByDishName } from './menuImages';
 import menuService from '../../services/menuService';
 import imageService from '../../services/imageService';
+import whatsappService from '../../services/whatsappService';
 import './Menu.css';
 
-const Menu = ({ onAdminAccess }) => {
+const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
   const [activeCategory, setActiveCategory] = useState('promociones');
   const [order, setOrder] = useState([]);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
@@ -47,7 +48,50 @@ const Menu = ({ onAdminAccess }) => {
   // Cargar datos del menú desde el servicio
   useEffect(() => {
     loadMenuData();
-  }, []);
+    
+    // Si es menú interno, verificar si hay datos de pedido en la URL
+    if (menuType === 'internal') {
+      checkForIncomingOrder();
+    }
+  }, [menuType]);
+
+  const checkForIncomingOrder = () => {
+    const orderResult = whatsappService.processOrderFromURL();
+    if (orderResult.success) {
+      // Mostrar modal de confirmación para registrar el pedido
+      const confirmMessage = `¿Deseas registrar este pedido en el sistema?\n\n` +
+        `Cliente: ${orderResult.data.customerName}\n` +
+        `Tipo: ${orderResult.data.orderType === 'takeout' ? 'Para Llevar' : 'Comer Aquí'}\n` +
+        `${orderResult.data.orderType === 'takeout' ? 'Recoger en mostrador' : `Mesa: ${orderResult.data.tableNumber}`}\n` +
+        `Total: ₡${orderResult.data.total.toFixed(2)}\n\n` +
+        `Items: ${orderResult.data.items.length}`;
+      
+      if (window.confirm(confirmMessage)) {
+        // Registrar el pedido automáticamente
+        registerIncomingOrder(orderResult.data);
+      }
+      
+      // Limpiar la URL después de procesar
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  };
+
+  const registerIncomingOrder = (orderData) => {
+    // Simular registro en el sistema (en una app real esto iría a la base de datos)
+    const registeredOrder = {
+      id: Date.now(),
+      ...orderData,
+      status: 'pending',
+      registeredAt: new Date().toISOString()
+    };
+
+    // Guardar en localStorage para simular persistencia
+    const existingOrders = JSON.parse(localStorage.getItem('restaurant_orders') || '[]');
+    existingOrders.push(registeredOrder);
+    localStorage.setItem('restaurant_orders', JSON.stringify(existingOrders));
+
+    alert(`✅ Pedido registrado exitosamente en el sistema!\n\nID: ${registeredOrder.id}\nCliente: ${orderData.customerName}\nEstado: Pendiente\n\nEl pedido aparecerá en el módulo de cocina.`);
+  };
 
   const loadMenuData = () => {
     const menuStructure = menuService.getMenuStructureWithPromotions();
@@ -126,22 +170,43 @@ const Menu = ({ onAdminAccess }) => {
   };
 
   const handleCheckoutConfirm = (checkoutData) => {
-    // Crear un resumen del pedido con comentarios
-    const orderSummary = order.map(item => {
-      let summary = `${item.name} x${item.quantity}`;
-      if (item.comments && item.comments.trim()) {
-        summary += ` - ${item.comments}`;
+    if (menuType === 'digital') {
+      // Flujo para menú digital: enviar a WhatsApp
+      const result = whatsappService.processDigitalOrder({
+        ...checkoutData,
+        order: order
+      });
+
+      if (result.success) {
+        const message = `¡Pedido enviado a WhatsApp!\n\n` +
+          `El restaurante recibirá tu pedido y se pondrá en contacto contigo para confirmar.\n\n` +
+          `Cliente: ${checkoutData.customerName}\n` +
+          `Tipo: ${checkoutData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Aquí'}\n` +
+          `${checkoutData.orderType === 'takeout' ? 'Recoger en mostrador' : `Mesa: ${checkoutData.tableNumber}`}\n\n` +
+          `Total: ₡${order.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}`;
+        
+        alert(message);
+      } else {
+        alert('Error al enviar el pedido. Por favor intenta nuevamente.');
       }
-      return summary;
-    }).join('\n');
+    } else {
+      // Flujo para menú interno: procesar directamente
+      const orderSummary = order.map(item => {
+        let summary = `${item.name} x${item.quantity}`;
+        if (item.comments && item.comments.trim()) {
+          summary += ` - ${item.comments}`;
+        }
+        return summary;
+      }).join('\n');
 
-    const orderTypeText = checkoutData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Aquí';
-    const locationInfo = checkoutData.orderType === 'takeout' 
-      ? 'Recoger en mostrador' 
-      : `Mesa: ${checkoutData.tableNumber}`;
+      const orderTypeText = checkoutData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Aquí';
+      const locationInfo = checkoutData.orderType === 'takeout' 
+        ? 'Recoger en mostrador' 
+        : `Mesa: ${checkoutData.tableNumber}`;
 
-    const message = `¡Pedido confirmado!\n\nCliente: ${checkoutData.customerName}\nTipo: ${orderTypeText}\n${locationInfo}\n\nResumen:\n${orderSummary}\n\nPronto estará listo.`;
-    alert(message);
+      const message = `¡Pedido confirmado!\n\nCliente: ${checkoutData.customerName}\nTipo: ${orderTypeText}\n${locationInfo}\n\nResumen:\n${orderSummary}\n\nPronto estará listo.`;
+      alert(message);
+    }
     
     // Cerrar el modal y limpiar el pedido
     setIsCheckoutModalOpen(false);
@@ -212,48 +277,63 @@ const Menu = ({ onAdminAccess }) => {
 
   return (
     <div className="menu-container">
-      {/* Botón de registro de clientes - esquina superior izquierda */}
-      <button 
-        className="customer-registration-btn"
-        onClick={() => setIsCustomerRegistrationOpen(true)}
-        title="Programa de Fidelización"
-      >
-        🎯 Únete
-      </button>
+      {/* Botón de registro de clientes - esquina superior izquierda - solo en menú interno */}
+      {menuType === 'internal' && (
+        <button 
+          className="customer-registration-btn"
+          onClick={() => setIsCustomerRegistrationOpen(true)}
+          title="Programa de Fidelización"
+        >
+          🎯 Únete
+        </button>
+      )}
 
-      {/* Botón discreto de administración */}
-      <button 
-        className="admin-access-btn"
-        onClick={() => setIsAdminLoginOpen(true)}
-        title="Acceso Administrativo"
-      >
-        ⚙️
-      </button>
+      {/* Botón discreto de administración - solo en menú interno */}
+      {menuType === 'internal' && (
+        <button 
+          className="admin-access-btn"
+          onClick={() => setIsAdminLoginOpen(true)}
+          title="Acceso Administrativo"
+        >
+          ⚙️
+        </button>
+      )}
 
       <div className="menu-header">
-        <h1 className="menu-title">🍽️ Nuestro Menú</h1>
-        <p className="menu-subtitle">Descubre los sabores que te harán volver por más</p>
+        <h1 className="menu-title">
+          🍽️ Nuestro Menú 
+          {menuType === 'digital' && <span className="menu-type-badge digital">📱 Digital</span>}
+          {menuType === 'internal' && <span className="menu-type-badge internal">🏪 Interno</span>}
+        </h1>
+        <p className="menu-subtitle">
+          {menuType === 'digital' 
+            ? 'Ordena desde tu mesa y envía tu pedido por WhatsApp' 
+            : 'Descubre los sabores que te harán volver por más'
+          }
+        </p>
         
-        {/* TEMPORAL: Botón de reset */}
-        <button 
-          onClick={resetData}
-          style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            padding: '5px 10px',
-            fontSize: '12px',
-            backgroundColor: '#ff6b6b',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          🔄 Reset
-        </button>
+        {/* TEMPORAL: Botón de reset - solo en menú interno */}
+        {menuType === 'internal' && (
+          <button 
+            onClick={resetData}
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              padding: '5px 10px',
+              fontSize: '12px',
+              backgroundColor: '#ff6b6b',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            🔄 Reset
+          </button>
+        )}
         
-        {/* Botón Llamar Mesero */}
+        {/* Botón Llamar Mesero - disponible en ambos tipos de menú */}
         <button 
           className="call-waiter-btn"
           onClick={() => setIsWaiterCallOpen(true)}
@@ -327,6 +407,7 @@ const Menu = ({ onAdminAccess }) => {
         onClose={handleCheckoutCancel}
         onConfirm={handleCheckoutConfirm}
         order={order}
+        menuType={menuType}
       />
 
       <AdminLoginModal
