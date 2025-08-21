@@ -32,6 +32,31 @@
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
+/* Botón de consultar puntos - debajo del botón de registro */
+.customer-points-btn {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 25px;
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+  white-space: nowrap;
+}
+
+.customer-points-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
+}
+
 /* Botón discreto de administración */
 .admin-access-btn {
   position: fixed;
@@ -886,7 +911,6 @@
 .order-items {
   max-height: 200px;
   overflow-y: auto;
-  margin-bottom: 15px;
 }
 
 .order-item {
@@ -1069,8 +1093,15 @@
   border-top: 2px solid #ecf0f1;
 }
 
+/* Fila de botones de loyalty */
+.loyalty-buttons-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
 .loyalty-toggle-btn {
-  width: 100%;
+  flex: 1;
   padding: 12px 20px;
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
@@ -1079,9 +1110,22 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 15px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.redeem-toggle-btn {
+  flex: 1;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
 }
 
 .loyalty-toggle-btn:hover {
@@ -1090,8 +1134,208 @@
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
-.loyalty-toggle-btn:active {
+.redeem-toggle-btn:hover {
+  background: linear-gradient(135deg, #e056fd, #f03a5f);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
+}
+
+.loyalty-toggle-btn:active,
+.redeem-toggle-btn:active {
   transform: translateY(0);
+}
+
+/* Estilos para la sección de canje de puntos */
+.redemption-content {
+  margin-top: 15px;
+  padding: 20px;
+  background: linear-gradient(135deg, #fff5f5, #fed7d7);
+  border-radius: 12px;
+  border: 2px solid #feb2b2;
+}
+
+.redemption-header h4 {
+  margin: 0 0 10px 0;
+  color: #c53030;
+  font-size: 1.1rem;
+}
+
+.redemption-header p {
+  margin: 0;
+  color: #744210;
+  font-size: 0.9rem;
+}
+
+.available-points {
+  font-weight: bold;
+  color: #c53030;
+}
+
+.redemption-error {
+  background: #fed7d7;
+  border: 1px solid #feb2b2;
+  color: #c53030;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.redemption-input-section {
+  margin-top: 15px;
+}
+
+.redemption-input-section label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #744210;
+  font-size: 0.95rem;
+}
+
+.points-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.points-input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #feb2b2;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  transition: border-color 0.3s ease;
+}
+
+.points-input:focus {
+  outline: none;
+  border-color: #f093fb;
+  box-shadow: 0 0 0 3px rgba(240, 147, 251, 0.1);
+}
+
+.redeem-btn {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.redeem-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e056fd, #f03a5f);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+}
+
+.redeem-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.redemption-preview {
+  background: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #feb2b2;
+  margin-top: 10px;
+}
+
+.redemption-preview p {
+  margin: 0;
+  font-weight: 600;
+  color: #744210;
+}
+
+.discount-preview {
+  color: #c53030;
+  font-size: 1.1rem;
+}
+
+/* Estilos para el total con descuento */
+.subtotal-line,
+.discount-line,
+.final-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+}
+
+.discount-line {
+  color: #c53030;
+  font-weight: 600;
+}
+
+.discount-amount {
+  color: #c53030;
+  font-weight: bold;
+}
+
+.final-total {
+  border-top: 2px solid #ecf0f1;
+  margin-top: 10px;
+  padding-top: 10px;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Estilos para el botón de canjear puntos */
+.redeem-points-btn {
+  width: 100%;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+}
+
+.redeem-points-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e056fd, #f03a5f);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
+}
+
+.redeem-points-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.redemption-action {
+  margin-top: 15px;
+}
+
+.min-points-warning {
+  margin: 10px 0 0 0;
+  color: #c53030;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.redemption-info {
+  margin: 10px 0 0 0;
+  color: #2d5016;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  background: #f0fff4;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #9ae6b4;
 }
 
 /* Estilos para el botón flotante del pedido */

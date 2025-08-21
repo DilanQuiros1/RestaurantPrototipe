@@ -11,8 +11,8 @@ const DEFAULT_CONFIG = {
   pointValue: 5, // Each point is worth ₡5
   programName: 'Programa de Lealtad',
   description: 'Acumula puntos con cada compra y obtén descuentos especiales',
-  minPointsToRedeem: 10, // Minimum points needed to redeem
-  maxPointsPerTransaction: 1000, // Maximum points that can be redeemed per transaction
+  minPointsToRedeem: 0, // No minimum points needed to redeem
+  maxPointsPerTransaction: 999999, // No maximum limit for points per transaction
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
 };
@@ -22,7 +22,16 @@ class LoyaltyService {
   static getConfig() {
     try {
       const config = localStorage.getItem(LOYALTY_CONFIG_KEY);
-      return config ? JSON.parse(config) : DEFAULT_CONFIG;
+      const parsedConfig = config ? JSON.parse(config) : DEFAULT_CONFIG;
+      
+      // Force reset if minPointsToRedeem is wrong
+      if (parsedConfig.minPointsToRedeem === 1000) {
+        console.log('Resetting loyalty config - wrong minPointsToRedeem detected');
+        localStorage.removeItem(LOYALTY_CONFIG_KEY);
+        return DEFAULT_CONFIG;
+      }
+      
+      return parsedConfig;
     } catch (error) {
       console.error('Error loading loyalty config:', error);
       return DEFAULT_CONFIG;

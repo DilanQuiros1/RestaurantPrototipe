@@ -26,6 +26,32 @@ class CustomerService {
       customers.push(testCustomerData);
       localStorage.setItem(this.storageKey, JSON.stringify(customers));
     }
+
+    // Agregar cliente con puntos suficientes para canje
+    const redemptionTestCustomer = customers.find(customer => customer.cedula === '119170241');
+    if (!redemptionTestCustomer) {
+      const redemptionTestCustomerData = {
+        cedula: '119170241',
+        nombre: 'María Elena Rodríguez',
+        telefono: '88889999',
+        id: 'test-customer-002',
+        registrationDate: new Date('2024-02-20').toISOString(),
+        points: 1500,
+        totalSpent: 50000,
+        orderCount: 25,
+        lastOrderDate: new Date('2024-12-15').toISOString()
+      };
+      
+      customers.push(redemptionTestCustomerData);
+      localStorage.setItem(this.storageKey, JSON.stringify(customers));
+    } else {
+      // Actualizar puntos si ya existe
+      const customerIndex = customers.findIndex(customer => customer.cedula === '119170241');
+      if (customerIndex !== -1) {
+        customers[customerIndex].points = 1500;
+        localStorage.setItem(this.storageKey, JSON.stringify(customers));
+      }
+    }
   }
 
   // Obtener todos los clientes
@@ -98,7 +124,7 @@ class CustomerService {
   }
 
   // Actualizar puntos del cliente
-  updateCustomerPoints(cedula, pointsToAdd, orderAmount) {
+  updateCustomerPoints(cedula, pointsToAdd, orderAmount = 0) {
     try {
       const customers = this.getAllCustomers();
       const customerIndex = customers.findIndex(customer => customer.cedula === cedula);
@@ -108,8 +134,31 @@ class CustomerService {
       }
 
       customers[customerIndex].points += pointsToAdd;
-      customers[customerIndex].totalSpent += orderAmount;
-      customers[customerIndex].orderCount += 1;
+      if (orderAmount > 0) {
+        customers[customerIndex].totalSpent += orderAmount;
+        customers[customerIndex].orderCount += 1;
+      }
+      customers[customerIndex].lastOrderDate = new Date().toISOString();
+
+      localStorage.setItem(this.storageKey, JSON.stringify(customers));
+      
+      return { success: true, customer: customers[customerIndex] };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Establecer puntos específicos del cliente (para canjes)
+  setCustomerPoints(cedula, newPointsAmount) {
+    try {
+      const customers = this.getAllCustomers();
+      const customerIndex = customers.findIndex(customer => customer.cedula === cedula);
+      
+      if (customerIndex === -1) {
+        return { success: false, error: 'Cliente no encontrado' };
+      }
+
+      customers[customerIndex].points = newPointsAmount;
       customers[customerIndex].lastOrderDate = new Date().toISOString();
 
       localStorage.setItem(this.storageKey, JSON.stringify(customers));

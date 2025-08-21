@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from '../../components/common/Button';
 import customerService from '../../services/customerService';
+import loyaltyService from '../../services/loyaltyService';
 
 const OrderSummary = ({ order, onClearOrder, onCheckout, onRemoveItem, onUpdateComments, onOpenCustomerRegistration, onCloseOrderSummary }) => {
   const [showComments, setShowComments] = useState({});
@@ -9,9 +10,17 @@ const OrderSummary = ({ order, onClearOrder, onCheckout, onRemoveItem, onUpdateC
   const [validatedCustomer, setValidatedCustomer] = useState(null);
   const [loyaltyError, setLoyaltyError] = useState('');
   const [isValidating, setIsValidating] = useState(false);
+  const [pointsToRedeem, setPointsToRedeem] = useState(0);
+  const [redemptionDiscount, setRedemptionDiscount] = useState(0);
+  const [showRedemptionSection, setShowRedemptionSection] = useState(false);
+  const [redemptionCustomerCedula, setRedemptionCustomerCedula] = useState('');
+  const [validatedRedemptionCustomer, setValidatedRedemptionCustomer] = useState(null);
+  const [redemptionError, setRedemptionError] = useState('');
+  const [isValidatingRedemption, setIsValidatingRedemption] = useState(false);
   
   const totalItems = order.reduce((sum, item) => sum + item.quantity, 0);
   const totalAmount = order.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const finalAmount = totalAmount - redemptionDiscount;
 
   const toggleComments = (itemId) => {
     setShowComments(prev => ({
@@ -32,6 +41,130 @@ const OrderSummary = ({ order, onClearOrder, onCheckout, onRemoveItem, onUpdateC
       setCustomerCedula('');
       setValidatedCustomer(null);
       setLoyaltyError('');
+      setShowRedemptionSection(false);
+      setPointsToRedeem(0);
+      setRedemptionDiscount(0);
+    }
+  };
+
+  const handleToggleRedemptionSection = () => {
+    setShowRedemptionSection(!showRedemptionSection);
+    if (!showRedemptionSection) {
+      // Reset cuando se abre la sección
+      setRedemptionCustomerCedula('');
+      setValidatedRedemptionCustomer(null);
+      setRedemptionError('');
+      setPointsToRedeem(0);
+      setRedemptionDiscount(0);
+    }
+  };
+
+  const handleValidateRedemptionCustomer = async () => {
+    if (!redemptionCustomerCedula.trim()) {
+      setRedemptionError('Por favor ingresa una cédula');
+      return;
+    }
+
+    setIsValidatingRedemption(true);
+    setRedemptionError('');
+
+    try {
+      const customer = customerService.getCustomerByCedula(redemptionCustomerCedula.trim());
+      
+      if (customer) {
+        setValidatedRedemptionCustomer(customer);
+        setRedemptionError('');
+      } else {
+        setValidatedRedemptionCustomer(null);
+        setRedemptionError('Cliente no encontrado. ¿Está registrado en el programa de fidelización?');
+      }
+    } catch (error) {
+      setRedemptionError('Error al buscar cliente. Intenta nuevamente.');
+    } finally {
+      setIsValidatingRedemption(false);
+    }
+  };
+
+  const handleRedemptionCedulaChange = (e) => {
+    setRedemptionCustomerCedula(e.target.value);
+    setValidatedRedemptionCustomer(null);
+    setRedemptionError('');
+  };
+
+  const handlePointsRedemption = () => {
+    if (!validatedRedemptionCustomer) {
+      setRedemptionError('No hay cliente validado');
+      return;
+    }
+
+    const config = loyaltyService.getConfig();
+    
+    // Si no hay puntos, no se puede canjear
+    if (validatedRedemptionCustomer.points <= 0) {
+      setRedemptionError('No tienes puntos disponibles para canjear');
+      return;
+    }
+
+    // Calcular el valor total de los puntos disponibles
+    const totalPointsValue = loyaltyService.calculatePointsValue(validatedRedemptionCustomer.points);
+    
+    // Determinar el descuento real (no puede exceder el subtotal)
+    const actualDiscount = Math.min(totalPointsValue, totalAmount);
+    
+    // Calcular cuántos puntos se necesitan para ese descuento
+    const pointsToUse = Math.ceil(actualDiscount / config.pointValue);
+    
+    setRedemptionDiscount(actualDiscount);
+    setPointsToRedeem(pointsToUse);
+    setRedemptionError('');
+    
+    // Actualizar puntos del cliente (restar solo los puntos utilizados)
+    const updatedCustomer = {
+      ...validatedRedemptionCustomer,
+      points: validatedRedemptionCustomer.points - pointsToUse
+    };
+    setValidatedRedemptionCustomer(updatedCustomer);
+    
+    // Actualizar también en el servicio de clientes para persistir el cambio
+    customerService.setCustomerPoints(validatedRedemptionCustomer.cedula, updatedCustomer.points);
+    
+    // Mensaje personalizado según el caso
+    let message = `✅ ¡Puntos canjeados exitosamente!\n\nPuntos utilizados: ${pointsToUse}\nDescuento aplicado: $${actualDiscount.toFixed(2)}`;
+    
+    if (actualDiscount >= totalAmount) {
+      message += `\n\n🎉 ¡Tu pedido está completamente cubierto con puntos!`;
+      message += `\nTotal a pagar: $0.00`;
+    } else {
+      message += `\nTotal a pagar: $${(totalAmount - actualDiscount).toFixed(2)}`;
+    }
+    
+    message += `\nPuntos restantes: ${updatedCustomer.points}`;
+    
+    if (updatedCustomer.points > 0) {
+      message += `\nValor restante de puntos: $${loyaltyService.calculatePointsValue(updatedCustomer.points).toFixed(2)}`;
+    }
+    
+    alert(message);
+  };
+
+  const handlePointsChange = (e) => {
+    const points = parseInt(e.target.value) || 0;
+    setPointsToRedeem(points);
+    
+    if (points > 0 && validatedCustomer) {
+      const config = loyaltyService.getConfig();
+      const validation = loyaltyService.canRedeemPoints(points, validatedCustomer.points);
+      
+      if (!validation.valid) {
+        setLoyaltyError(validation.reason);
+      } else {
+        const discount = loyaltyService.calculatePointsValue(points);
+        if (discount > totalAmount) {
+          setLoyaltyError(`El descuento máximo es $${totalAmount.toFixed(2)}`);
+        } else {
+          setLoyaltyError('');
+        }
+      }
     }
   };
 
@@ -144,20 +277,25 @@ const OrderSummary = ({ order, onClearOrder, onCheckout, onRemoveItem, onUpdateC
         ))}
       </div>
       
-      <div className="order-total">
-        <span>Total:</span>
-        <span className="total-amount">${totalAmount.toFixed(2)}</span>
-      </div>
-
       {/* Sección de Programa de Fidelización */}
       <div className="loyalty-section">
-        <button 
-          className="loyalty-toggle-btn"
-          onClick={handleToggleLoyaltySection}
-          type="button"
-        >
-          {showLoyaltySection ? '🎯 Ocultar Puntos' : '🎯 Acumular Puntos'}
-        </button>
+        <div className="loyalty-buttons-row">
+          <button 
+            className="loyalty-toggle-btn"
+            onClick={handleToggleLoyaltySection}
+            type="button"
+          >
+            {showLoyaltySection ? '🎯 Ocultar Puntos' : '🎯 Acumular Puntos'}
+          </button>
+          
+          <button 
+            className="redeem-toggle-btn"
+            onClick={handleToggleRedemptionSection}
+            type="button"
+          >
+            {showRedemptionSection ? '💎 Ocultar Canje' : '💎 Canjear Puntos'}
+          </button>
+        </div>
 
         {showLoyaltySection && (
           <div className="loyalty-content">
@@ -220,20 +358,121 @@ const OrderSummary = ({ order, onClearOrder, onCheckout, onRemoveItem, onUpdateC
             )}
           </div>
         )}
+
+        {showRedemptionSection && (
+          <div className="redemption-content">
+            <div className="redemption-input-section">
+              <label htmlFor="redemption-customer-cedula">Cédula del Cliente:</label>
+              <div className="cedula-input-group">
+                <input
+                  id="redemption-customer-cedula"
+                  type="text"
+                  value={redemptionCustomerCedula}
+                  onChange={handleRedemptionCedulaChange}
+                  placeholder="Ingresa tu cédula"
+                  className="cedula-input"
+                  disabled={isValidatingRedemption}
+                />
+                <button
+                  onClick={handleValidateRedemptionCustomer}
+                  className="validate-btn"
+                  disabled={isValidatingRedemption || !redemptionCustomerCedula.trim()}
+                >
+                  {isValidatingRedemption ? 'Validando...' : 'Validar'}
+                </button>
+              </div>
+            </div>
+
+            {redemptionError && (
+              <div className="loyalty-error">
+                {redemptionError}
+                {redemptionError.includes('Cliente no encontrado') && onOpenCustomerRegistration && (
+                  <button 
+                    className="register-link-btn"
+                    onClick={() => {
+                      if (onCloseOrderSummary) onCloseOrderSummary();
+                      if (onOpenCustomerRegistration) onOpenCustomerRegistration();
+                    }}
+                    type="button"
+                  >
+                    Registrar nuevo cliente
+                  </button>
+                )}
+              </div>
+            )}
+
+            {validatedRedemptionCustomer && (
+              <div className="customer-info">
+                <div className="customer-details">
+                  <h4>✅ Cliente Validado</h4>
+                  <p><strong>Nombre:</strong> {validatedRedemptionCustomer.nombre}</p>
+                  <p><strong>Puntos Actuales:</strong> <span className="current-points">{validatedRedemptionCustomer.points}</span></p>
+                </div>
+                
+                <div className="redemption-action">
+                  <button
+                    onClick={handlePointsRedemption}
+                    className="redeem-points-btn"
+                    disabled={validatedRedemptionCustomer.points <= 0}
+                  >
+                    💎 Canjear Todos los Puntos
+                  </button>
+                  
+                  {validatedRedemptionCustomer.points <= 0 && (
+                    <p className="min-points-warning">
+                      ⚠️ No tienes puntos disponibles para canjear
+                    </p>
+                  )}
+                  
+                  {validatedRedemptionCustomer.points > 0 && (
+                    <p className="redemption-info">
+                      💰 Valor total de tus puntos: ${loyaltyService.calculatePointsValue(validatedRedemptionCustomer.points).toFixed(2)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Resumen de Totales - Movido al final */}
+      <div className="order-summary-totals">
+        {redemptionDiscount > 0 ? (
+          <>
+            <div className="subtotal-line">
+              <span>Subtotal:</span>
+              <span>${totalAmount.toFixed(2)}</span>
+            </div>
+            <div className="discount-line">
+              <span>Descuento por puntos:</span>
+              <span className="discount-amount">-${redemptionDiscount.toFixed(2)}</span>
+            </div>
+            <div className="final-total">
+              <span>Total a pagar:</span>
+              <span className="total-amount">${finalAmount.toFixed(2)}</span>
+            </div>
+          </>
+        ) : (
+          <div className="simple-total">
+            <span>Total:</span>
+            <span className="total-amount">${totalAmount.toFixed(2)}</span>
+          </div>
+        )}
       </div>
       
-      <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+      <div className="action-buttons">
         <Button 
           variant="secondary" 
           onClick={onClearOrder}
-          style={{ flex: 1 }}
+          className="clear-btn"
         >
           Limpiar
         </Button>
         <Button 
           variant="primary" 
           onClick={onCheckout}
-          style={{ flex: 1 }}
+          className="checkout-btn"
         >
           Finalizar
         </Button>

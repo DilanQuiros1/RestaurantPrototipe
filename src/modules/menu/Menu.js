@@ -5,6 +5,7 @@ import CheckoutModal from './CheckoutModal';
 import AdminLoginModal from './AdminLoginModal';
 import WaiterCallModal from './WaiterCallModal';
 import CustomerRegistrationModal from '../loyalty/CustomerRegistrationModal';
+import CustomerPointsModal from '../../components/CustomerPointsModal';
 import { getImageByDishName } from './menuImages';
 import menuService from '../../services/menuService';
 import imageService from '../../services/imageService';
@@ -18,6 +19,7 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [isWaiterCallOpen, setIsWaiterCallOpen] = useState(false);
   const [isCustomerRegistrationOpen, setIsCustomerRegistrationOpen] = useState(false);
+  const [isCustomerPointsOpen, setIsCustomerPointsOpen] = useState(false);
   const [menuData, setMenuData] = useState({});
   const [categories, setCategories] = useState([]);
   const [showOrderSummary, setShowOrderSummary] = useState(false);
@@ -288,6 +290,17 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
         </button>
       )}
 
+      {/* Botón de consultar puntos - esquina superior izquierda - solo en menú interno */}
+      {menuType === 'internal' && (
+        <button 
+          className="customer-points-btn"
+          onClick={() => setIsCustomerPointsOpen(true)}
+          title="Consultar mis puntos"
+        >
+          🏆 Mis Puntos
+        </button>
+      )}
+
       {/* Botón discreto de administración - solo en menú interno */}
       {menuType === 'internal' && (
         <button 
@@ -426,6 +439,11 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
         isOpen={isCustomerRegistrationOpen}
         onClose={() => setIsCustomerRegistrationOpen(false)}
         onRegistrationSuccess={handleCustomerRegistrationSuccess}
+      />
+
+      <CustomerPointsModal
+        isOpen={isCustomerPointsOpen}
+        onClose={() => setIsCustomerPointsOpen(false)}
       />
     </div>
   );
