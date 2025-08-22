@@ -22,13 +22,13 @@ const Cashier = () => {
         tableNumber: 5,
         customerName: 'Juan Pérez',
         items: [
-          { id: 1, name: 'Hamburguesa Clásica', quantity: 2, unitPrice: 8.99, notes: 'Sin cebolla' },
-          { id: 2, name: 'Papas Fritas', quantity: 2, unitPrice: 3.99, notes: '' },
-          { id: 3, name: 'Coca Cola', quantity: 2, unitPrice: 2.50, notes: 'Con hielo' }
+          { id: 1, name: 'Hamburguesa Clásica', quantity: 2, unitPrice: 4500, notes: 'Sin cebolla' },
+          { id: 2, name: 'Nachos Supremos', quantity: 1, unitPrice: 5000, notes: '' },
+          { id: 3, name: 'Limonada Natural', quantity: 2, unitPrice: 1300, notes: 'Con hielo' }
         ],
-        subtotal: 30.96,
-        tax: 4.02,
-        total: 34.98,
+        subtotal: 16100,
+        tax: 2093,
+        total: 18193,
         status: 'pending_payment',
         orderDate: '2025-01-11',
         orderTime: '19:30',
@@ -40,13 +40,13 @@ const Cashier = () => {
         tableNumber: 3,
         customerName: 'Ana Rodríguez',
         items: [
-          { id: 4, name: 'Filete de Res', quantity: 1, unitPrice: 24.99, notes: 'Término medio' },
-          { id: 5, name: 'Ensalada César', quantity: 1, unitPrice: 8.99, notes: 'Aderezo aparte' },
-          { id: 6, name: 'Vino Tinto', quantity: 1, unitPrice: 15.99, notes: '' }
+          { id: 5, name: 'Filete de Res', quantity: 1, unitPrice: 5500, notes: 'Término medio' },
+          { id: 6, name: 'Pollo a la Plancha', quantity: 1, unitPrice: 5500, notes: 'Con arroz' },
+          { id: 9, name: 'Limonada Natural', quantity: 1, unitPrice: 1300, notes: '' }
         ],
-        subtotal: 49.97,
-        tax: 6.50,
-        total: 56.47,
+        subtotal: 12300,
+        tax: 1599,
+        total: 13899,
         status: 'pending_payment',
         orderDate: '2025-01-11',
         orderTime: '20:15',
@@ -58,12 +58,12 @@ const Cashier = () => {
         tableNumber: 8,
         customerName: 'Roberto Silva',
         items: [
-          { id: 7, name: 'Pizza Margherita', quantity: 1, unitPrice: 12.99, notes: 'Extra queso' },
-          { id: 8, name: 'Limonada Natural', quantity: 2, unitPrice: 3.99, notes: '' }
+          { id: 3, name: 'Pizza Margherita', quantity: 1, unitPrice: 7500, notes: 'Extra queso' },
+          { id: 9, name: 'Limonada Natural', quantity: 2, unitPrice: 1300, notes: '' }
         ],
-        subtotal: 20.97,
-        tax: 2.73,
-        total: 23.70,
+        subtotal: 10100,
+        tax: 1313,
+        total: 11413,
         status: 'pending_payment',
         orderDate: '2025-01-11',
         orderTime: '20:45',
@@ -75,13 +75,13 @@ const Cashier = () => {
         tableNumber: 12,
         customerName: 'Laura Jiménez',
         items: [
-          { id: 9, name: 'Pasta Carbonara', quantity: 1, unitPrice: 16.99, notes: '' },
-          { id: 10, name: 'Pan de Ajo', quantity: 1, unitPrice: 4.99, notes: '' },
-          { id: 11, name: 'Agua Mineral', quantity: 1, unitPrice: 1.99, notes: 'Con gas' }
+          { id: 7, name: 'Pasta Carbonara', quantity: 1, unitPrice: 4800, notes: '' },
+          { id: 11, name: 'Café Americano', quantity: 2, unitPrice: 1200, notes: '' },
+          { id: 10, name: 'Smoothie de Frutas', quantity: 1, unitPrice: 1500, notes: 'Con mango' }
         ],
-        subtotal: 23.97,
-        tax: 3.12,
-        total: 27.09,
+        subtotal: 8700,
+        tax: 1131,
+        total: 9831,
         status: 'pending_payment',
         orderDate: '2025-01-11',
         orderTime: '21:00',
@@ -173,7 +173,7 @@ const Cashier = () => {
           </div>
           <div className="stat-card">
             <span className="stat-number">
-              ${pendingOrders.reduce((sum, order) => sum + order.total, 0).toFixed(2)}
+            ₡ {pendingOrders.reduce((sum, order) => sum + order.total, 0).toFixed(2)}
             </span>
             <span className="stat-label">Total Pendiente</span>
           </div>

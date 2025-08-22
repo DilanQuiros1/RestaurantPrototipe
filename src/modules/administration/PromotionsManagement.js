@@ -241,17 +241,17 @@ const PromotionsManagement = () => {
 
                   <div className="promotion-pricing">
                     <div className="original-price">
-                      Precio original: <span className="price">${getMenuItemPrice(promotion.menuItemId).toFixed(2)}</span>
+                      Precio original: <span className="price">₡{getMenuItemPrice(promotion.menuItemId).toFixed(2)}</span>
                     </div>
                     <div className="discount-info">
                       Descuento: <span className="discount">
                         {promotion.discountType === 'percentage' 
                           ? `${promotion.discountValue}%` 
-                          : `$${promotion.discountValue.toFixed(2)}`}
+                          : `₡${promotion.discountValue.toFixed(2)}`}
                       </span>
                     </div>
                     <div className="final-price">
-                      Precio final: <span className="price discounted">${calculateDiscountedPrice(promotion).toFixed(2)}</span>
+                      Precio final: <span className="price discounted">₡{calculateDiscountedPrice(promotion).toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -327,7 +327,7 @@ const PromotionsManagement = () => {
                     <option value="">Selecciona un producto</option>
                     {menuItems.map(item => (
                       <option key={item.id} value={item.id}>
-                        {item.name} - ${item.price.toFixed(2)}
+                        {item.name} - ₡{item.price.toFixed(2)}
                       </option>
                     ))}
                   </select>
@@ -345,7 +345,7 @@ const PromotionsManagement = () => {
                     required
                   >
                     <option value="percentage">Porcentaje (%)</option>
-                    <option value="fixed">Monto Fijo ($)</option>
+                    <option value="fixed">Monto Fijo (₡)</option>
                   </select>
                 </div>
                 <div className="form-group">

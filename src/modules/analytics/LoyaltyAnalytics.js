@@ -116,7 +116,7 @@ const LoyaltyAnalytics = () => {
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-          🎯 Análisis del Programa de Lealtad
+          🎯 Análisis del Programa de Fidelizacion
         </Typography>
         <Typography variant="subtitle1" color="text.secondary">
           Métricas detalladas del programa de puntos y fidelización

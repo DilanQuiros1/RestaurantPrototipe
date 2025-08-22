@@ -14,7 +14,7 @@ const OrderDetailModal = ({ isOpen, order, onClose, onProceedToPayment }) => {
   const availablePromos = {
     'DESCUENTO10': { type: 'percentage', value: 10, description: '10% de descuento' },
     'PROMO15': { type: 'percentage', value: 15, description: '15% de descuento' },
-    'FIJO5': { type: 'fixed', value: 5, description: '$5 de descuento' },
+    'FIJO5': { type: 'fixed', value: 5, description: '₡5 de descuento' },
     'ESTUDIANTE': { type: 'percentage', value: 20, description: '20% descuento estudiante' }
   };
 
@@ -67,7 +67,7 @@ const OrderDetailModal = ({ isOpen, order, onClose, onProceedToPayment }) => {
       originalTotal: order.total,
       discountAmount: discountAmount,
       discountType: appliedPromo ? 'promo' : discountType,
-      discountDescription: appliedPromo ? appliedPromo.description : `${discount}${discountType === 'percentage' ? '%' : '$'} descuento`,
+      discountDescription: appliedPromo ? appliedPromo.description : `${discount}${discountType === 'percentage' ? '%' : '₡'} descuento`,
       subtotal: newSubtotal,
       tax: newTax,
       total: newTotal
@@ -119,8 +119,8 @@ const OrderDetailModal = ({ isOpen, order, onClose, onProceedToPayment }) => {
                     </div>
                   </div>
                   <div className="item-pricing">
-                    <span className="unit-price">${item.unitPrice.toFixed(2)} c/u</span>
-                    <span className="total-price">${(item.quantity * item.unitPrice).toFixed(2)}</span>
+                    <span className="unit-price">₡{item.unitPrice.toFixed(2)} c/u</span>
+                    <span className="total-price">₡{(item.quantity * item.unitPrice).toFixed(2)}</span>
                   </div>
                 </div>
               ))}
@@ -179,7 +179,7 @@ const OrderDetailModal = ({ isOpen, order, onClose, onProceedToPayment }) => {
                         checked={discountType === 'fixed'}
                         onChange={(e) => setDiscountType(e.target.value)}
                       />
-                      Monto Fijo ($)
+                      Monto Fijo (₡)
                     </label>
                   </div>
                   <div className="discount-input">
@@ -190,7 +190,7 @@ const OrderDetailModal = ({ isOpen, order, onClose, onProceedToPayment }) => {
                       step={discountType === 'percentage' ? 1 : 0.01}
                       value={discount}
                       onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                      placeholder={`Descuento ${discountType === 'percentage' ? '(%)' : '($)'}`}
+                      placeholder={`Descuento ${discountType === 'percentage' ? '(%)' : '(₡)'}`}
                     />
                   </div>
                 </div>
@@ -203,14 +203,14 @@ const OrderDetailModal = ({ isOpen, order, onClose, onProceedToPayment }) => {
             <div className="totals-breakdown">
               <div className="total-row">
                 <span className="label">Subtotal:</span>
-                <span className="amount">${order.subtotal.toFixed(2)}</span>
+                <span className="amount">₡{order.subtotal.toFixed(2)}</span>
               </div>
               
               {discountAmount > 0 && (
                 <div className="total-row discount-row">
                   <span className="label">
                     Descuento {appliedPromo ? `(${appliedPromo.description})` : 
-                    `(${discount}${discountType === 'percentage' ? '%' : '$'})`}:
+                    `(${discount}${discountType === 'percentage' ? '%' : '₡'})`}:
                   </span>
                   <span className="amount discount">{discountAmount.toFixed(2)}</span>
                 </div>
@@ -218,17 +218,17 @@ const OrderDetailModal = ({ isOpen, order, onClose, onProceedToPayment }) => {
               
               <div className="total-row">
                 <span className="label">Subtotal con descuento:</span>
-                <span className="amount">${newSubtotal.toFixed(2)}</span>
+                <span className="amount">₡{newSubtotal.toFixed(2)}</span>
               </div>
               
               <div className="total-row">
                 <span className="label">Impuesto (13%):</span>
-                <span className="amount">${newTax.toFixed(2)}</span>
+                <span className="amount">₡{newTax.toFixed(2)}</span>
               </div>
               
               <div className="total-row final-total">
                 <span className="label">Total a Pagar:</span>
-                <span className="amount">${newTotal.toFixed(2)}</span>
+                <span className="amount">₡{newTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>

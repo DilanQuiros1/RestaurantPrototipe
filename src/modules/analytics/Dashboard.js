@@ -33,6 +33,7 @@ import ReportsTable from "./ReportsTable";
 import Filters from "./Filters";
 import ExportButtons from "./ExportButtons";
 import LoyaltyAnalytics from "./LoyaltyAnalytics";
+import CashAnalysis from "./CashAnalysis";
 import {
   generateMockData,
   calculateKPIs,
@@ -237,14 +238,7 @@ const Dashboard = () => {
           </>
         );
       case "analytics":
-        return (
-          <>
-            <Filters onFilterChange={handleFilterChange} filters={filters} />
-            <Box sx={{ mt: 3 }}>
-              <Charts data={chartData} />
-            </Box>
-          </>
-        );
+        return <CashAnalysis />;
       case "loyalty":
         return <LoyaltyAnalytics />;
       case "reports":
@@ -259,11 +253,12 @@ const Dashboard = () => {
       case "trends":
         return (
           <>
-            <Filters onFilterChange={handleFilterChange} filters={filters} />
             <KPISection
               kpis={kpis}
               comparisonData={comparisonData}
               orders={filteredData}
+              onFilterChange={handleFilterChange}
+              filters={filters}
             />
             <Box sx={{ mt: 3 }}>
               <Charts data={chartData} showComparison={true} />

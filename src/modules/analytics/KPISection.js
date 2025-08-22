@@ -481,7 +481,7 @@ const KPISection = ({ kpis, comparisonData, orders = [], onFilterChange, filters
       {/* Top Products Section */}
       <Box sx={{ mt: 4 }}>
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#333' }}>
-          Productos Más Vendidos (Esta Semana)
+          Productos Más Vendidos
         </Typography>
         
         <Grid container spacing={2}>

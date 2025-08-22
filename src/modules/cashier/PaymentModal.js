@@ -157,7 +157,7 @@ const PaymentModal = ({ isOpen, order, onClose, onPaymentComplete }) => {
               <span className="separator">•</span>
               <span>Mesa {order.tableNumber}</span>
               <span className="separator">•</span>
-              <span className="total-amount">${order.total.toFixed(2)}</span>
+              <span className="total-amount">₡{order.total.toFixed(2)}</span>
             </div>
           </div>
           <button className="close-btn" onClick={onClose}>×</button>
@@ -195,7 +195,7 @@ const PaymentModal = ({ isOpen, order, onClose, onPaymentComplete }) => {
                 <div className="cash-input-group">
                   <label>Monto Recibido:</label>
                   <div className="amount-input">
-                    <span className="currency">$</span>
+                    <span className="currency">₡</span>
                     <input
                       type="number"
                       min={order.total}
@@ -212,7 +212,7 @@ const PaymentModal = ({ isOpen, order, onClose, onPaymentComplete }) => {
                   <div className="change-display">
                     <div className="change-info">
                       <span className="change-label">Cambio a entregar:</span>
-                      <span className="change-amount">${change.toFixed(2)}</span>
+                      <span className="change-amount">₡{change.toFixed(2)}</span>
                     </div>
                   </div>
                 )}
@@ -228,7 +228,7 @@ const PaymentModal = ({ isOpen, order, onClose, onPaymentComplete }) => {
                     <div className="confirmation-text">
                       <p><strong>Pago con tarjeta seleccionado</strong></p>
                       <p>El cliente pagará con tarjeta de débito o crédito.</p>
-                      <p>Total a cobrar: <strong>${order.total.toFixed(2)}</strong></p>
+                      <p>Total a cobrar: <strong>₡{order.total.toFixed(2)}</strong></p>
                     </div>
                   </div>
                 </div>
@@ -256,7 +256,7 @@ const PaymentModal = ({ isOpen, order, onClose, onPaymentComplete }) => {
                   <div className="sinpe-info">
                     <p><strong>ℹ️ Información:</strong></p>
                     <p>Se registrará el pago por SINPE móvil a nombre de <strong>{sinpeDetails.customerName || '[Nombre]'}</strong></p>
-                    <p>Total a recibir: <strong>${order.total.toFixed(2)}</strong></p>
+                    <p>Total a recibir: <strong>₡{order.total.toFixed(2)}</strong></p>
                   </div>
                 </div>
               </div>
@@ -296,7 +296,7 @@ const PaymentModal = ({ isOpen, order, onClose, onPaymentComplete }) => {
                   <div className="pending-info">
                     <p><strong>ℹ️ Información:</strong></p>
                     <p>Este pedido quedará marcado como <strong>"SINPE Pendiente"</strong> hasta que se confirme el pago.</p>
-                    <p>Total a recibir: <strong>${order.total.toFixed(2)}</strong></p>
+                    <p>Total a recibir: <strong>₡{order.total.toFixed(2)}</strong></p>
                   </div>
                 </div>
               </div>
@@ -306,12 +306,12 @@ const PaymentModal = ({ isOpen, order, onClose, onPaymentComplete }) => {
           <div className="payment-summary">
             <div className="summary-row">
               <span>Total a Pagar:</span>
-              <span className="total">${order.total.toFixed(2)}</span>
+              <span className="total">₡{order.total.toFixed(2)}</span>
             </div>
             {order.discountAmount > 0 && (
               <div className="summary-row discount">
                 <span>Descuento Aplicado:</span>
-                <span>-${order.discountAmount.toFixed(2)}</span>
+                <span>-₡{order.discountAmount.toFixed(2)}</span>
               </div>
             )}
           </div>

@@ -98,12 +98,12 @@ const PendingOrdersList = ({ orders, onOrderSelect }) => {
 
             <div className="order-total">
               <div className="total-amount">
-                {/* <span className="currency">$</span> */}
+                {/* <span className="currency">₡</span> */}
                 <span className="amount">{order.total.toFixed(2)}</span>
               </div>
               <div className="total-breakdown">
-                <span className="subtotal">Subtotal: ${order.subtotal.toFixed(2)}</span>
-                <span className="tax">Impuesto: ${order.tax.toFixed(2)}</span>
+                <span className="subtotal">Subtotal: ₡{order.subtotal.toFixed(2)}</span>
+                <span className="tax">Impuesto: ₡{order.tax.toFixed(2)}</span>
               </div>
             </div>
 

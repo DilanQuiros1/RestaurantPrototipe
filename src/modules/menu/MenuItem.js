@@ -56,7 +56,7 @@ const MenuItem = ({ item, onSelect }) => {
                     <div className="discount-value">
                       {activePromotion.discountType === 'percentage' 
                         ? `${activePromotion.discountValue}%` 
-                        : `$${activePromotion.discountValue.toFixed(2)}`}
+                        : `₡${activePromotion.discountValue.toLocaleString('es-CR')}`}
                     </div>
                     <div className="discount-text">DESCUENTO</div>
                   </div>
@@ -101,12 +101,12 @@ const MenuItem = ({ item, onSelect }) => {
                   <div className="price-comparison">
                     <div className="original-price-section">
                       <span className="price-label">Precio regular:</span>
-                      <span className="original-price">${item.price.toFixed(2)}</span>
+                      <span className="original-price">₡{item.price.toLocaleString('es-CR')}</span>
                     </div>
                     <div className="discounted-price-section">
                       <span className="price-label">¡Tu precio especial!</span>
                       <span className="discounted-price">
-                        ${calculateDiscountedPrice(item.price, activePromotion).toFixed(2)}
+                        ₡{calculateDiscountedPrice(item.price, activePromotion).toLocaleString('es-CR')}
                       </span>
                     </div>
                   </div>
@@ -114,7 +114,7 @@ const MenuItem = ({ item, onSelect }) => {
                     <div className="savings-badge">
                       <span className="savings-icon">💰</span>
                       <span className="savings-text">
-                        ¡AHORRAS ${(item.price - calculateDiscountedPrice(item.price, activePromotion)).toFixed(2)}!
+                        ¡AHORRAS ₡{(item.price - calculateDiscountedPrice(item.price, activePromotion)).toLocaleString('es-CR')}!
                       </span>
                     </div>
                   </div>
@@ -163,7 +163,7 @@ const MenuItem = ({ item, onSelect }) => {
               <h3 className="menu-item-name">{item.name}</h3>
               <p className="menu-item-description">{item.description}</p>
               <div className="menu-item-pricing">
-                <div className="menu-item-price">${item.price.toFixed(2)}</div>
+                <div className="menu-item-price">₡{item.price.toLocaleString('es-CR')}</div>
               </div>
               
               <Button 

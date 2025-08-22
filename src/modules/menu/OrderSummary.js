@@ -129,19 +129,19 @@ const OrderSummary = ({ order, onClearOrder, onCheckout, onRemoveItem, onUpdateC
     customerService.setCustomerPoints(validatedRedemptionCustomer.cedula, updatedCustomer.points);
     
     // Mensaje personalizado según el caso
-    let message = `✅ ¡Puntos canjeados exitosamente!\n\nPuntos utilizados: ${pointsToUse}\nDescuento aplicado: $${actualDiscount.toFixed(2)}`;
+    let message = `✅ ¡Puntos canjeados exitosamente!\n\nPuntos utilizados: ${pointsToUse}\nDescuento aplicado: ₡${actualDiscount.toLocaleString('es-CR')}`;
     
     if (actualDiscount >= totalAmount) {
       message += `\n\n🎉 ¡Tu pedido está completamente cubierto con puntos!`;
-      message += `\nTotal a pagar: $0.00`;
+      message += `\nTotal a pagar: ₡0`;
     } else {
-      message += `\nTotal a pagar: $${(totalAmount - actualDiscount).toFixed(2)}`;
+      message += `\nTotal a pagar: ₡${(totalAmount - actualDiscount).toLocaleString('es-CR')}`;
     }
     
     message += `\nPuntos restantes: ${updatedCustomer.points}`;
     
     if (updatedCustomer.points > 0) {
-      message += `\nValor restante de puntos: $${loyaltyService.calculatePointsValue(updatedCustomer.points).toFixed(2)}`;
+      message += `\nValor restante de puntos: ₡${loyaltyService.calculatePointsValue(updatedCustomer.points).toLocaleString('es-CR')}`;
     }
     
     alert(message);
@@ -426,7 +426,7 @@ const OrderSummary = ({ order, onClearOrder, onCheckout, onRemoveItem, onUpdateC
                   
                   {validatedRedemptionCustomer.points > 0 && (
                     <p className="redemption-info">
-                      💰 Valor total de tus puntos: ${loyaltyService.calculatePointsValue(validatedRedemptionCustomer.points).toFixed(2)}
+                      💰 Valor total de tus puntos: ₡{loyaltyService.calculatePointsValue(validatedRedemptionCustomer.points).toLocaleString('es-CR')}
                     </p>
                   )}
                 </div>
@@ -442,21 +442,21 @@ const OrderSummary = ({ order, onClearOrder, onCheckout, onRemoveItem, onUpdateC
           <>
             <div className="subtotal-line">
               <span>Subtotal:</span>
-              <span>${totalAmount.toFixed(2)}</span>
+              <span>₡{totalAmount.toLocaleString('es-CR')}</span>
             </div>
             <div className="discount-line">
               <span>Descuento por puntos:</span>
-              <span className="discount-amount">-${redemptionDiscount.toFixed(2)}</span>
+              <span className="discount-amount">-₡{redemptionDiscount.toLocaleString('es-CR')}</span>
             </div>
             <div className="final-total">
               <span>Total a pagar:</span>
-              <span className="total-amount">${finalAmount.toFixed(2)}</span>
+              <span className="total-amount">₡{finalAmount.toLocaleString('es-CR')}</span>
             </div>
           </>
         ) : (
           <div className="simple-total">
             <span>Total:</span>
-            <span className="total-amount">${totalAmount.toFixed(2)}</span>
+            <span className="total-amount">₡{totalAmount.toLocaleString('es-CR')}</span>
           </div>
         )}
       </div>

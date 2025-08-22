@@ -13,7 +13,7 @@ import whatsappService from '../../services/whatsappService';
 import './Menu.css';
 
 const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
-  const [activeCategory, setActiveCategory] = useState('promociones');
+  const [activeCategory, setActiveCategory] = useState('platos-del-dia');
   const [order, setOrder] = useState([]);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
@@ -104,6 +104,8 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
     console.log('Categories:', categoriesData);
     console.log('Promociones en structure:', menuStructure.promociones);
     console.log('Promociones count:', menuStructure.promociones ? menuStructure.promociones.length : 0);
+    console.log('Platos del día en structure:', menuStructure['platos-del-dia']);
+    console.log('Platos del día count:', menuStructure['platos-del-dia'] ? menuStructure['platos-del-dia'].length : 0);
     
     // Verificar datos en localStorage
     const localData = localStorage.getItem('restaurantMenuData');
@@ -115,9 +117,9 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
     setMenuData(menuStructure);
     setCategories(categoriesData);
     
-    // Si no hay promociones activas y la categoría actual es promociones, cambiar a la primera disponible
-    if (!menuStructure.promociones && activeCategory === 'promociones' && categoriesData.length > 0) {
-      const firstAvailableCategory = categoriesData.find(cat => cat.id !== 'promociones');
+    // Si no hay platos del día activos y la categoría actual es platos-del-dia, cambiar a la primera disponible
+    if (!menuStructure['platos-del-dia'] && activeCategory === 'platos-del-dia' && categoriesData.length > 0) {
+      const firstAvailableCategory = categoriesData.find(cat => cat.id !== 'platos-del-dia' && cat.id !== 'promociones');
       if (firstAvailableCategory) {
         setActiveCategory(firstAvailableCategory.id);
       }
@@ -258,11 +260,12 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
     // Aquí podrías agregar lógica adicional como mostrar el ID del cliente en la interfaz
   };
 
-  // TEMPORAL: Función para resetear datos
+  // TEMPORAL: Función para resetear datos y forzar recarga de platos del día
   const resetData = () => {
     localStorage.removeItem('restaurantMenuData');
     localStorage.removeItem('restaurant_custom_images'); // También limpiar imágenes si es necesario
-    alert('Datos reseteados. La página se recargará.');
+    console.log('🔄 localStorage limpiado - forzando recarga de datos del JSON');
+    alert('Datos reseteados. La página se recargará para mostrar los platos del día.');
     window.location.reload();
   };
 
@@ -368,7 +371,7 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
         ))}
       </div>
 
-      <div className="menu-grid">
+      <div className={`menu-grid ${activeCategory === 'platos-del-dia' ? 'daily-specials-grid' : ''} ${activeCategory === 'promociones' ? 'promotions-grid' : ''}`}>
         {menuData[activeCategory] && menuData[activeCategory].map(item => (
           <MenuItem
             key={item.id}

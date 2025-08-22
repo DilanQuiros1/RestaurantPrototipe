@@ -5,7 +5,7 @@ class MenuService {
     // Cargar datos desde el JSON y sincronizar con localStorage para persistencia
     console.log(' MenuService: Inicializando con datos del JSON');
     
-    // Siempre usar los datos del JSON como fuente principal
+    // FORZAR uso de datos del JSON para asegurar que las promociones actualizadas se carguen
     this.data = { ...menuData };
     
     // Sincronizar con localStorage para mantener cambios de administración
@@ -16,12 +16,13 @@ class MenuService {
         ...menuData, // Estructura base del JSON
         ...savedData, // Datos modificados en administración
         categories: menuData.categories, // Siempre usar categorías del JSON
-        promotions: savedData.promotions || menuData.promotions // Promociones actualizadas
+        promotions: menuData.promotions // SIEMPRE usar promociones del JSON para asegurar datos actualizados
       };
     }
     
     this.saveToLocalStorage();
     console.log(` MenuService: ${this.data.items.length} productos y ${this.data.promotions.length} promociones cargados`);
+    console.log('Promociones cargadas:', this.data.promotions);
   }
 
   // Cargar datos del localStorage para persistencia en el demo
@@ -213,12 +214,33 @@ class MenuService {
     );
   }
 
-  // Obtener productos con promociones activas
+  // Obtener productos con promociones activas (excluyendo platos del día)
   getPromotedItems() {
     const activePromotions = this.getActivePromotions();
     const allItems = this.getAllItems();
 
     return activePromotions
+      .filter(promo => !promo.isDailySpecial) // Excluir platos del día de promociones
+      .map(promo => {
+        const item = allItems.find(item => item.id === promo.menuItemId);
+        return item ? { ...item, promotion: promo } : null;
+      })
+      .filter(item => item !== null)
+      .sort((a, b) => a.promotion.priority - b.promotion.priority);
+  }
+
+  // Obtener productos que son platos del día (promociones marcadas como isDailySpecial)
+  getDailySpecials() {
+    const activePromotions = this.getActivePromotions();
+    const allItems = this.getAllItems();
+    
+    console.log('=== DEBUG DAILY SPECIALS ===');
+    console.log('All promotions:', this.getPromotions());
+    console.log('Active promotions:', activePromotions);
+    console.log('Daily specials filter:', activePromotions.filter(promo => promo.isDailySpecial));
+
+    return activePromotions
+      .filter(promo => promo.isDailySpecial)
       .map(promo => {
         const item = allItems.find(item => item.id === promo.menuItemId);
         return item ? { ...item, promotion: promo } : null;
@@ -243,6 +265,12 @@ class MenuService {
   getMenuStructureWithPromotions() {
     const structure = this.getMenuStructure();
     const promotedItems = this.getPromotedItems();
+    const dailySpecials = this.getDailySpecials();
+    
+    // Agregar categoría de platos del día si hay especiales diarios
+    if (dailySpecials.length > 0) {
+      structure['platos-del-dia'] = dailySpecials;
+    }
     
     // Agregar categoría de promociones si hay items promocionados
     if (promotedItems.length > 0) {
@@ -251,7 +279,7 @@ class MenuService {
 
     // Filtrar productos promocionados de otras categorías
     Object.keys(structure).forEach(categoryKey => {
-      if (categoryKey !== 'promociones') {
+      if (categoryKey !== 'promociones' && categoryKey !== 'platos-del-dia') {
         structure[categoryKey] = this.filterPromotedItems(structure[categoryKey] || []);
       }
     });
@@ -261,17 +289,28 @@ class MenuService {
 
   // Obtener categorías con promociones incluidas
   getCategoriesWithPromotions() {
-    // Filtrar la categoría promociones del JSON para evitar duplicados
-    const categories = this.getCategories().filter(cat => cat.id !== 'promociones');
+    // Filtrar las categorías promociones y platos-del-dia del JSON para evitar duplicados
+    const categories = this.getCategories().filter(cat => 
+      cat.id !== 'promociones' && cat.id !== 'platos-del-dia'
+    );
     const promotedItems = this.getPromotedItems();
+    const dailySpecials = this.getDailySpecials();
+    
+    const dynamicCategories = [];
+    
+    // Agregar categoría de platos del día si hay especiales diarios
+    if (dailySpecials.length > 0) {
+      const dailySpecialsCategory = { id: 'platos-del-dia', name: '🌟 Platos del Día', icon: '🌟' };
+      dynamicCategories.push(dailySpecialsCategory);
+    }
     
     // Agregar categoría de promociones si hay items promocionados
     if (promotedItems.length > 0) {
       const promotionsCategory = { id: 'promociones', name: '🎉 Promociones', icon: '🎉' };
-      return [promotionsCategory, ...categories];
+      dynamicCategories.push(promotionsCategory);
     }
 
-    return categories;
+    return [...dynamicCategories, ...categories];
   }
 
   // === MÉTODOS CRUD PARA PROMOCIONES ===

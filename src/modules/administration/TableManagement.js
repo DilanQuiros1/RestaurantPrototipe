@@ -19,7 +19,6 @@ const TableManagement = () => {
     free: { label: 'Libre', color: '#28a745', icon: '🟢' },
     occupied: { label: 'Ocupada', color: '#dc3545', icon: '🔴' },
     waiting: { label: 'Esperando Pedido', color: '#ffc107', icon: '🟡' },
-    reserved: { label: 'Reservada', color: '#6f42c1', icon: '🟣' },
     merged: { label: 'Mesa Combinada', color: '#17a2b8', icon: '🔗' }
   };
 
@@ -30,7 +29,7 @@ const TableManagement = () => {
       { id: 2, number: 2, capacity: 2, state: 'occupied', position: { x: 1, y: 0 } },
       { id: 3, number: 3, capacity: 6, state: 'waiting', position: { x: 2, y: 0 } },
       { id: 4, number: 4, capacity: 4, state: 'free', position: { x: 0, y: 1 } },
-      { id: 5, number: 5, capacity: 8, state: 'reserved', position: { x: 1, y: 1 } },
+      { id: 5, number: 5, capacity: 8, state: 'free', position: { x: 1, y: 1 } },
       { id: 6, number: 6, capacity: 2, state: 'free', position: { x: 2, y: 1 } },
       { id: 7, number: 7, capacity: 4, state: 'free', position: { x: 0, y: 2 } },
       { id: 8, number: 8, capacity: 6, state: 'free', position: { x: 1, y: 2 } },

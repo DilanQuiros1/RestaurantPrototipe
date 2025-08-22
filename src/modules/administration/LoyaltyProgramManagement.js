@@ -122,7 +122,7 @@ const LoyaltyProgramManagement = () => {
         <div className="loyalty-title-section">
           <h2 className="loyalty-title">
             <span className="loyalty-icon">🎯</span>
-            Programa de Lealtad
+            Programa de Fidelizacion
           </h2>
           <p className="loyalty-subtitle">
             Configura y gestiona el programa de puntos para tus clientes

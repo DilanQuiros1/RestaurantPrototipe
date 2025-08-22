@@ -3,18 +3,18 @@ export const generateMockData = () => {
   const today = new Date();
   const orders = [];
   const products = [
-    { id: 1, name: 'Hamburguesa Clásica', category: 'comidas-rapidas', price: 8.99 },
-    { id: 2, name: 'Nachos Supremos', category: 'comidas-rapidas', price: 6.99 },
-    { id: 3, name: 'Pizza Margherita', category: 'comidas-rapidas', price: 12.99 },
-    { id: 4, name: 'Hot Dog Gourmet', category: 'comidas-rapidas', price: 5.99 },
-    { id: 5, name: 'Filete de Res', category: 'platos-fuertes', price: 24.99 },
-    { id: 6, name: 'Pollo a la Plancha', category: 'platos-fuertes', price: 18.99 },
-    { id: 7, name: 'Pasta Carbonara', category: 'platos-fuertes', price: 16.99 },
-    { id: 8, name: 'Salmón Asado', category: 'platos-fuertes', price: 22.99 },
-    { id: 9, name: 'Limonada Natural', category: 'bebidas', price: 3.99 },
-    { id: 10, name: 'Smoothie de Frutas', category: 'bebidas', price: 5.99 },
-    { id: 11, name: 'Café Americano', category: 'bebidas', price: 2.99 },
-    { id: 12, name: 'Té Helado', category: 'bebidas', price: 3.49 }
+    { id: 1, name: 'Hamburguesa Clásica', category: 'comidas-rapidas', price: 4500 },
+    { id: 2, name: 'Nachos Supremos', category: 'comidas-rapidas', price: 5000 },
+    { id: 3, name: 'Pizza Margherita', category: 'comidas-rapidas', price: 7500 },
+    { id: 4, name: 'Hot Dog Gourmet', category: 'comidas-rapidas', price: 3500 },
+    { id: 5, name: 'Filete de Res', category: 'platos-fuertes', price: 5500 },
+    { id: 6, name: 'Pollo a la Plancha', category: 'platos-fuertes', price: 5500 },
+    { id: 7, name: 'Pasta Carbonara', category: 'platos-fuertes', price: 4800 },
+    { id: 8, name: 'Salmón Asado', category: 'platos-fuertes', price: 4500 },
+    { id: 9, name: 'Limonada Natural', category: 'bebidas', price: 1300 },
+    { id: 10, name: 'Smoothie de Frutas', category: 'bebidas', price: 1500 },
+    { id: 11, name: 'Café Americano', category: 'bebidas', price: 1200 },
+    { id: 12, name: 'Té Helado', category: 'bebidas', price: 1500 }
   ];
 
   const paymentMethods = ['Efectivo', 'Tarjeta', 'SINPE Móvil'];

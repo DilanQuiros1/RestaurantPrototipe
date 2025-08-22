@@ -9,7 +9,7 @@ const DEFAULT_CONFIG = {
   pointsPerAmount: 1, // Points earned per ₡100 spent
   amountPerPoint: 100, // ₡100 = 1 point
   pointValue: 5, // Each point is worth ₡5
-  programName: 'Programa de Lealtad',
+  programName: 'Programa de Fidelizacion',
   description: 'Acumula puntos con cada compra y obtén descuentos especiales',
   minPointsToRedeem: 0, // No minimum points needed to redeem
   maxPointsPerTransaction: 999999, // No maximum limit for points per transaction
