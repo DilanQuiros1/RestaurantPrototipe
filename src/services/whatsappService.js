@@ -1,9 +1,17 @@
 // Servicio para manejar la integración con WhatsApp y generación de URLs
 class WhatsAppService {
-  // Generar URL con datos del pedido para registro interno
-  static generateOrderURL(orderData) {
-    const baseURL = window.location.origin;
+  // Generar ID único para el pedido
+  static generateOrderId() {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 1000);
+    return `ORD-${timestamp}-${random}`;
+  }
+
+  // Guardar pedido en localStorage con ID único
+  static saveOrderForWhatsApp(orderData) {
+    const orderId = this.generateOrderId();
     const orderParams = {
+      id: orderId,
       customerName: orderData.customerName,
       orderType: orderData.orderType,
       tableNumber: orderData.tableNumber,
@@ -15,16 +23,27 @@ class WhatsAppService {
         comments: item.comments || ''
       })),
       total: orderData.order.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      status: 'pending_validation',
+      source: 'whatsapp'
     };
 
-    // Codificar los datos del pedido en base64 para la URL
-    const encodedData = btoa(JSON.stringify(orderParams));
-    return `${baseURL}/solrestaurante/internal?order=${encodedData}`;
+    // Guardar en localStorage
+    const existingOrders = JSON.parse(localStorage.getItem('whatsapp_pending_orders') || '[]');
+    existingOrders.push(orderParams);
+    localStorage.setItem('whatsapp_pending_orders', JSON.stringify(existingOrders));
+    
+    return orderId;
+  }
+
+  // Generar URL con ID del pedido
+  static generateOrderURL(orderId) {
+    const baseURL = 'https://restaurant-prototipe.vercel.app';
+    return `${baseURL}?orderId=${orderId}`;
   }
 
   // Generar mensaje de WhatsApp con detalles del pedido
-  static generateWhatsAppMessage(orderData, orderURL) {
+  static generateWhatsAppMessage(orderData, orderId) {
     const orderTypeText = orderData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Restaurante';
     const locationInfo = orderData.orderType === 'takeout' 
       ? 'Recoger en mostrador' 
@@ -47,67 +66,114 @@ class WhatsAppService {
       `🕐 *Hora:* ${new Date().toLocaleString('es-CR')}\n\n` +
       `*DETALLE DEL PEDIDO:*\n${itemsList}\n\n` +
       `💰 *TOTAL: ₡${total.toFixed(2)}*\n\n` +
-      `🔗 *Registrar pedido en sistema:*\n${orderURL}\n\n` +
-      `_Haga clic en el enlace para registrar automáticamente este pedido en el sistema del restaurante._`;
+      `🔢 *NÚMERO DE PEDIDO:* \`${orderId}\`\n\n` +
+      `_Para registrar este pedido en el sistema, ingrese el número de pedido en el módulo de administración del restaurante._`;
 
     return message;
   }
 
   // Enviar mensaje a WhatsApp (abrir WhatsApp Web)
   static sendToWhatsApp(phoneNumber, message) {
+    // Limpiar y formatear el número de teléfono
+    const cleanPhoneNumber = phoneNumber.replace(/\D/g, ''); // Remover todo excepto dígitos
+    
+    // Agregar código de país si no lo tiene (Costa Rica +506)
+    const formattedPhone = cleanPhoneNumber.startsWith('506') ? cleanPhoneNumber : `506${cleanPhoneNumber}`;
+    
     const encodedMessage = encodeURIComponent(message);
-    const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    const whatsappURL = `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
+    
+    console.log('WhatsApp URL generada:', whatsappURL);
+    console.log('Número original:', phoneNumber);
+    console.log('Número formateado:', formattedPhone);
+    
     window.open(whatsappURL, '_blank');
   }
 
-  // Función principal para procesar pedido digital
-  static processDigitalOrder(orderData, restaurantPhone = '50684190735') {
+  // Función principal para procesar pedido digital y enviar por WhatsApp
+  static processDigitalOrder(orderData, phoneNumber) {
     try {
-      const orderURL = this.generateOrderURL(orderData);
-      const whatsappMessage = this.generateWhatsAppMessage(orderData, orderURL);
+      // Guardar pedido y obtener ID
+      const orderId = this.saveOrderForWhatsApp(orderData);
+      
+      // Generar mensaje de WhatsApp con solo el número de pedido
+      const message = this.generateWhatsAppMessage(orderData, orderId);
       
       // Enviar a WhatsApp
-      this.sendToWhatsApp(restaurantPhone, whatsappMessage);
+      this.sendToWhatsApp(phoneNumber, message);
       
       return {
-        orderURL,
-        whatsappMessage,
-        success: true
+        success: true,
+        orderId: orderId,
+        message: 'Pedido enviado a WhatsApp exitosamente'
       };
     } catch (error) {
       console.error('Error procesando pedido digital:', error);
       return {
         success: false,
-        error: error.message
+        error: 'Error al procesar el pedido'
       };
     }
   }
 
-  // Procesar datos de pedido desde URL (para menú interno)
-  static processOrderFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderParam = urlParams.get('order');
-    
-    if (orderParam) {
-      try {
-        const orderData = JSON.parse(atob(orderParam));
-        return {
-          success: true,
-          data: orderData
-        };
-      } catch (error) {
-        console.error('Error al procesar datos del pedido desde URL:', error);
-        return {
-          success: false,
-          error: 'Datos de pedido inválidos'
-        };
+  // Obtener pedido por ID desde localStorage
+  static getOrderById(orderId) {
+    try {
+      const pendingOrders = JSON.parse(localStorage.getItem('whatsapp_pending_orders') || '[]');
+      const order = pendingOrders.find(o => o.id === orderId);
+      
+      if (!order) {
+        return { success: false, error: 'Pedido no encontrado o ya procesado' };
       }
+      
+      return { success: true, data: order };
+    } catch (error) {
+      console.error('Error getting order by ID:', error);
+      return { success: false, error: error.message };
     }
-    
-    return {
-      success: false,
-      error: 'No se encontraron datos de pedido en la URL'
-    };
+  }
+
+  // Procesar pedido desde URL (cuando se abre desde WhatsApp)
+  static processOrderFromURL() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderId = urlParams.get('orderId');
+      
+      if (!orderId) {
+        return { success: false, error: 'No order ID found in URL' };
+      }
+      
+      // Obtener datos del pedido por ID
+      return this.getOrderById(orderId);
+    } catch (error) {
+      console.error('Error processing order from URL:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Marcar pedido como procesado (remover de pendientes)
+  static markOrderAsProcessed(orderId) {
+    try {
+      const pendingOrders = JSON.parse(localStorage.getItem('whatsapp_pending_orders') || '[]');
+      const filteredOrders = pendingOrders.filter(o => o.id !== orderId);
+      localStorage.setItem('whatsapp_pending_orders', JSON.stringify(filteredOrders));
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error marking order as processed:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Obtener todos los pedidos pendientes de WhatsApp
+  static getPendingWhatsAppOrders() {
+    try {
+      const pendingOrders = JSON.parse(localStorage.getItem('whatsapp_pending_orders') || '[]');
+      return { success: true, orders: pendingOrders };
+    } catch (error) {
+      console.error('Error getting pending orders:', error);
+      return { success: false, error: error.message };
+    }
   }
 }
 

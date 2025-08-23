@@ -6,6 +6,7 @@ import AdminLoginModal from './AdminLoginModal';
 import WaiterCallModal from './WaiterCallModal';
 import CustomerRegistrationModal from '../loyalty/CustomerRegistrationModal';
 import CustomerPointsModal from '../../components/CustomerPointsModal';
+import OrderValidationModal from '../../components/OrderValidationModal';
 import { getImageByDishName } from './menuImages';
 import menuService from '../../services/menuService';
 import imageService from '../../services/imageService';
@@ -20,6 +21,8 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
   const [isWaiterCallOpen, setIsWaiterCallOpen] = useState(false);
   const [isCustomerRegistrationOpen, setIsCustomerRegistrationOpen] = useState(false);
   const [isCustomerPointsOpen, setIsCustomerPointsOpen] = useState(false);
+  const [isOrderValidationOpen, setIsOrderValidationOpen] = useState(false);
+  const [validationOrderData, setValidationOrderData] = useState(null);
   const [menuData, setMenuData] = useState({});
   const [categories, setCategories] = useState([]);
   const [showOrderSummary, setShowOrderSummary] = useState(false);
@@ -50,33 +53,7 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
   // Cargar datos del menú desde el servicio
   useEffect(() => {
     loadMenuData();
-    
-    // Si es menú interno, verificar si hay datos de pedido en la URL
-    if (menuType === 'internal') {
-      checkForIncomingOrder();
-    }
   }, [menuType]);
-
-  const checkForIncomingOrder = () => {
-    const orderResult = whatsappService.processOrderFromURL();
-    if (orderResult.success) {
-      // Mostrar modal de confirmación para registrar el pedido
-      const confirmMessage = `¿Deseas registrar este pedido en el sistema?\n\n` +
-        `Cliente: ${orderResult.data.customerName}\n` +
-        `Tipo: ${orderResult.data.orderType === 'takeout' ? 'Para Llevar' : 'Comer Restaurante'}\n` +
-        `${orderResult.data.orderType === 'takeout' ? 'Recoger en mostrador' : `Mesa: ${orderResult.data.tableNumber}`}\n` +
-        `Total: ₡${orderResult.data.total.toFixed(2)}\n\n` +
-        `Items: ${orderResult.data.items.length}`;
-      
-      if (window.confirm(confirmMessage)) {
-        // Registrar el pedido automáticamente
-        registerIncomingOrder(orderResult.data);
-      }
-      
-      // Limpiar la URL después de procesar
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  };
 
   const registerIncomingOrder = (orderData) => {
     // Simular registro en el sistema (en una app real esto iría a la base de datos)
@@ -91,6 +68,11 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
     const existingOrders = JSON.parse(localStorage.getItem('restaurant_orders') || '[]');
     existingOrders.push(registeredOrder);
     localStorage.setItem('restaurant_orders', JSON.stringify(existingOrders));
+
+    // Marcar el pedido como procesado en WhatsApp
+    if (orderData.id) {
+      whatsappService.markOrderAsProcessed(orderData.id);
+    }
 
     alert(`✅ Pedido registrado exitosamente en el sistema!\n\nID: ${registeredOrder.id}\nCliente: ${orderData.customerName}\nEstado: Pendiente\n\nEl pedido aparecerá en el módulo de cocina.`);
   };
@@ -179,7 +161,7 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
       const result = whatsappService.processDigitalOrder({
         ...checkoutData,
         order: order
-      });
+      }, checkoutData.phoneNumber);
 
       if (result.success) {
         const message = `¡Pedido enviado a WhatsApp!\n\n` +
@@ -258,6 +240,22 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
   const handleCustomerRegistrationSuccess = (customer) => {
     console.log('Cliente registrado exitosamente:', customer);
     // Aquí podrías agregar lógica adicional como mostrar el ID del cliente en la interfaz
+  };
+
+  const handleOrderValidationConfirm = async (orderData) => {
+    try {
+      await registerIncomingOrder(orderData);
+      setIsOrderValidationOpen(false);
+      setValidationOrderData(null);
+    } catch (error) {
+      console.error('Error registering order:', error);
+      alert('Error al registrar el pedido. Por favor intenta nuevamente.');
+    }
+  };
+
+  const handleOrderValidationCancel = () => {
+    setIsOrderValidationOpen(false);
+    setValidationOrderData(null);
   };
 
   // TEMPORAL: Función para resetear datos y forzar recarga de platos del día
@@ -445,6 +443,13 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
       <CustomerPointsModal
         isOpen={isCustomerPointsOpen}
         onClose={() => setIsCustomerPointsOpen(false)}
+      />
+
+      <OrderValidationModal
+        isOpen={isOrderValidationOpen}
+        orderData={validationOrderData}
+        onConfirm={handleOrderValidationConfirm}
+        onCancel={handleOrderValidationCancel}
       />
     </div>
   );

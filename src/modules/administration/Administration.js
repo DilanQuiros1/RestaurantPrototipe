@@ -4,10 +4,12 @@ import TableManagement from './TableManagement';
 import PromotionsManagement from './PromotionsManagement';
 import LoyaltyProgramManagement from './LoyaltyProgramManagement';
 import Cashier from '../cashier/Cashier';
+import WhatsAppOrderSearch from '../../components/WhatsAppOrderSearch';
 import './Administration.css';
 
 const Administration = () => {
   const [activeTab, setActiveTab] = useState('menu');
+  const [isWhatsAppSearchOpen, setIsWhatsAppSearchOpen] = useState(false);
 
   const tabs = [
     { id: 'menu', label: 'Gestión de Menú', icon: '🍽️' },
@@ -22,6 +24,12 @@ const Administration = () => {
       <div className="administration-header">
         <h1 className="administration-title">Panel de Administración</h1>
         <p className="administration-subtitle">Gestiona tu restaurante de manera eficiente</p>
+        <button 
+          className="whatsapp-search-button"
+          onClick={() => setIsWhatsAppSearchOpen(true)}
+        >
+          📱 Buscar Pedido WhatsApp
+        </button>
       </div>
 
       <div className="administration-tabs">
@@ -44,6 +52,11 @@ const Administration = () => {
         {activeTab === 'tables' && <TableManagement />}
         {activeTab === 'cashier' && <Cashier />}
       </div>
+
+      <WhatsAppOrderSearch
+        isOpen={isWhatsAppSearchOpen}
+        onClose={() => setIsWhatsAppSearchOpen(false)}
+      />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import './CheckoutModal.css';
 
 const CheckoutModal = ({ isOpen, onClose, onConfirm, order, menuType = 'internal' }) => {
   const [customerName, setCustomerName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedTable, setSelectedTable] = useState(null);
   const [orderType, setOrderType] = useState('dine-in'); // 'dine-in' or 'takeout'
   const [error, setError] = useState('');
@@ -30,6 +31,12 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order, menuType = 'internal
       return;
     }
     
+    // Validar teléfono si es menú digital
+    if (menuType === 'digital' && !phoneNumber.trim()) {
+      setError('Por favor ingresa el número de teléfono');
+      return;
+    }
+    
     // Solo validar mesa si es menú interno y tipo dine-in
     if (menuType === 'internal' && orderType === 'dine-in' && !selectedTable) {
       setError('Por favor selecciona una mesa');
@@ -38,6 +45,7 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order, menuType = 'internal
 
     onConfirm({
       customerName: customerName.trim(),
+      phoneNumber: phoneNumber.trim(),
       orderType: orderType,
       tableNumber: (menuType === 'internal' && orderType === 'dine-in') ? selectedTable : null,
       order: order
@@ -53,6 +61,7 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order, menuType = 'internal
 
   const handleClose = () => {
     setCustomerName('');
+    setPhoneNumber('');
     setSelectedTable(null);
     setOrderType('dine-in');
     setError('');
@@ -91,6 +100,20 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order, menuType = 'internal
               className="customer-name-input"
             />
           </div>
+
+          {menuType === 'digital' && (
+            <div className="form-group">
+              <label htmlFor="phoneNumber">Número de Teléfono *</label>
+              <input
+                type="tel"
+                id="phoneNumber"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="Ej: 8888-8888"
+                className="phone-input"
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label>Tipo de Pedido *</label>
