@@ -49,7 +49,7 @@ const Filters = ({ onFilterChange, filters }) => {
   ];
 
   const orderTypes = [
-    { value: 'dine-in', label: 'Comer Aquí' },
+    { value: 'dine-in', label: 'Comer Restaurante' },
     { value: 'takeout', label: 'Para Llevar' }
   ];
 

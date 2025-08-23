@@ -142,13 +142,13 @@ const MenuManagement = () => {
           <p>Administra los productos de tu menú</p>
         </div>
         <div className="header-actions">
-          <Button 
+          {/* <Button 
             variant="secondary" 
             onClick={handleResetMenu}
             className="reset-menu-btn"
           >
             🔄 Resetear Menú
-          </Button>
+          </Button> */}
           <Button 
             variant="primary" 
             onClick={handleAddProduct}

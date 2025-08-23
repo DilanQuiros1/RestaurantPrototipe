@@ -38,22 +38,32 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import LoyaltyService from '../../services/loyaltyService';
+import Filters from './Filters';
 
 const LoyaltyAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [segmentation, setSegmentation] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    dateRange: { start: null, end: null },
+    category: '',
+    paymentMethod: '',
+    orderType: '',
+    status: '',
+    minAmount: '',
+    maxAmount: ''
+  });
 
   useEffect(() => {
     loadAnalytics();
     const interval = setInterval(loadAnalytics, 30000); // Update every 30 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [filters]);
 
   const loadAnalytics = () => {
     try {
-      const loyaltyAnalytics = LoyaltyService.getLoyaltyAnalytics();
-      const customerSegmentation = LoyaltyService.getCustomerSegmentation();
+      const loyaltyAnalytics = LoyaltyService.getLoyaltyAnalytics(filters);
+      const customerSegmentation = LoyaltyService.getCustomerSegmentation(filters);
       setAnalytics(loyaltyAnalytics);
       setSegmentation(customerSegmentation);
       setLoading(false);
@@ -61,6 +71,10 @@ const LoyaltyAnalytics = () => {
       console.error('Error loading loyalty analytics:', error);
       setLoading(false);
     }
+  };
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
   };
 
   const formatCurrency = (amount) => {
@@ -113,6 +127,9 @@ const LoyaltyAnalytics = () => {
 
   return (
     <Box sx={{ p: 3 }}>
+      {/* Filters */}
+      <Filters onFilterChange={handleFilterChange} filters={filters} />
+      
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2' }}>

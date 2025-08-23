@@ -69,7 +69,7 @@ const ExportButtons = ({ data, kpis }) => {
   };
 
   const getOrderTypeLabel = (type) => {
-    return type === 'dine-in' ? 'Comer Aquí' : 'Para Llevar';
+    return type === 'dine-in' ? 'Comer Restaurante' : 'Para Llevar';
   };
 
   const handleColumnChange = (column) => {

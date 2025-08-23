@@ -25,7 +25,7 @@ class WhatsAppService {
 
   // Generar mensaje de WhatsApp con detalles del pedido
   static generateWhatsAppMessage(orderData, orderURL) {
-    const orderTypeText = orderData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Aquí';
+    const orderTypeText = orderData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Restaurante';
     const locationInfo = orderData.orderType === 'takeout' 
       ? 'Recoger en mostrador' 
       : 'Reservar mesa al llegar';

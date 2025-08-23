@@ -63,7 +63,7 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
       // Mostrar modal de confirmación para registrar el pedido
       const confirmMessage = `¿Deseas registrar este pedido en el sistema?\n\n` +
         `Cliente: ${orderResult.data.customerName}\n` +
-        `Tipo: ${orderResult.data.orderType === 'takeout' ? 'Para Llevar' : 'Comer Aquí'}\n` +
+        `Tipo: ${orderResult.data.orderType === 'takeout' ? 'Para Llevar' : 'Comer Restaurante'}\n` +
         `${orderResult.data.orderType === 'takeout' ? 'Recoger en mostrador' : `Mesa: ${orderResult.data.tableNumber}`}\n` +
         `Total: ₡${orderResult.data.total.toFixed(2)}\n\n` +
         `Items: ${orderResult.data.items.length}`;
@@ -185,7 +185,7 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
         const message = `¡Pedido enviado a WhatsApp!\n\n` +
           `El restaurante recibirá tu pedido y se pondrá en contacto contigo para confirmar.\n\n` +
           `Cliente: ${checkoutData.customerName}\n` +
-          `Tipo: ${checkoutData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Aquí'}\n` +
+          `Tipo: ${checkoutData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Restaurante'}\n` +
           `${checkoutData.orderType === 'takeout' ? 'Recoger en mostrador' : `Mesa: ${checkoutData.tableNumber}`}\n\n` +
           `Total: ₡${order.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}`;
         
@@ -203,7 +203,7 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
         return summary;
       }).join('\n');
 
-      const orderTypeText = checkoutData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Aquí';
+      const orderTypeText = checkoutData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Restaurante';
       const locationInfo = checkoutData.orderType === 'takeout' 
         ? 'Recoger en mostrador' 
         : `Mesa: ${checkoutData.tableNumber}`;
@@ -282,27 +282,23 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
 
   return (
     <div className="menu-container">
-      {/* Botón de registro de clientes - esquina superior izquierda - solo en menú interno */}
-      {menuType === 'internal' && (
-        <button 
-          className="customer-registration-btn"
-          onClick={() => setIsCustomerRegistrationOpen(true)}
-          title="Programa de Fidelización"
-        >
-          🎯 Únete
-        </button>
-      )}
+      {/* Botón de registro de clientes - disponible en ambos tipos de menú */}
+      <button 
+        className="customer-registration-btn"
+        onClick={() => setIsCustomerRegistrationOpen(true)}
+        title="Programa de Fidelización"
+      >
+        🎯 Únete
+      </button>
 
-      {/* Botón de consultar puntos - esquina superior izquierda - solo en menú interno */}
-      {menuType === 'internal' && (
-        <button 
-          className="customer-points-btn"
-          onClick={() => setIsCustomerPointsOpen(true)}
-          title="Consultar mis puntos"
-        >
-          🏆 Mis Puntos
-        </button>
-      )}
+      {/* Botón de consultar puntos - disponible en ambos tipos de menú */}
+      <button 
+        className="customer-points-btn"
+        onClick={() => setIsCustomerPointsOpen(true)}
+        title="Consultar mis puntos"
+      >
+        🏆 Mis Puntos
+      </button>
 
       {/* Botón discreto de administración - solo en menú interno */}
       {menuType === 'internal' && (
@@ -349,14 +345,16 @@ const Menu = ({ onAdminAccess, menuType = 'internal' }) => {
           </button>
         )}
         
-        {/* Botón Llamar Mesero - disponible en ambos tipos de menú */}
-        <button 
-          className="call-waiter-btn"
-          onClick={() => setIsWaiterCallOpen(true)}
-          title="Solicitar atención del mesero"
-        >
-          🔔 Llamar Mesero
-        </button>
+        {/* Botón Llamar Mesero - solo en menú interno */}
+        {menuType === 'internal' && (
+          <button 
+            className="call-waiter-btn"
+            onClick={() => setIsWaiterCallOpen(true)}
+            title="Solicitar atención del mesero"
+          >
+            🔔 Llamar Mesero
+          </button>
+        )}
       </div>
 
       <div className="categories-container">

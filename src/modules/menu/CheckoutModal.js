@@ -104,7 +104,7 @@ const CheckoutModal = ({ isOpen, onClose, onConfirm, order, menuType = 'internal
               >
                 <div className="order-type-icon">🍽️</div>
                 <div className="order-type-text">
-                  <div className="order-type-title">Comer Aquí</div>
+                  <div className="order-type-title">Comer Restaurante</div>
                   <div className="order-type-subtitle">
                     {menuType === 'digital' ? 'Reservar mesa al llegar' : 'Servicio en mesa'}
                   </div>

@@ -16,7 +16,7 @@ const OrderRegistrationModal = ({ isOpen, onClose, orderData, onConfirm }) => {
     }
   };
 
-  const orderTypeText = orderData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Aquí';
+  const orderTypeText = orderData.orderType === 'takeout' ? 'Para Llevar' : 'Comer Restaurante';
   const locationInfo = orderData.orderType === 'takeout' 
     ? 'Recoger en mostrador' 
     : `Mesa: ${orderData.tableNumber}`;

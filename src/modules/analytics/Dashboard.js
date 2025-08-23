@@ -29,6 +29,7 @@ import {
 } from "@mui/icons-material";
 import KPISection from "./KPISection";
 import Charts from "./Charts";
+import AdvancedTrends from "./AdvancedTrends";
 import ReportsTable from "./ReportsTable";
 import Filters from "./Filters";
 import ExportButtons from "./ExportButtons";
@@ -252,18 +253,11 @@ const Dashboard = () => {
         );
       case "trends":
         return (
-          <>
-            <KPISection
-              kpis={kpis}
-              comparisonData={comparisonData}
-              orders={filteredData}
-              onFilterChange={handleFilterChange}
-              filters={filters}
-            />
-            <Box sx={{ mt: 3 }}>
-              <Charts data={chartData} showComparison={true} />
-            </Box>
-          </>
+          <AdvancedTrends 
+            data={data} 
+            onFilterChange={handleFilterChange} 
+            filters={filters}
+          />
         );
       case "export":
         return (

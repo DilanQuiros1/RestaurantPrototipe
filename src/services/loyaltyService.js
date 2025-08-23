@@ -360,10 +360,13 @@ class LoyaltyService {
   }
 
   // Get comprehensive analytics for the loyalty program
-  static getLoyaltyAnalytics() {
+  static getLoyaltyAnalytics(filters = {}) {
     const mockData = this.getMockLoyaltyData();
-    const customers = mockData.customers;
+    let customers = mockData.customers;
     const config = this.getConfig();
+    
+    // Apply filters to customer data
+    customers = this.applyFiltersToCustomers(customers, filters);
     
     // Calculate basic metrics
     const totalCustomers = customers.length;
@@ -390,7 +393,7 @@ class LoyaltyService {
       Math.round(totalPointsIssued / totalCustomers) : 0;
     
     // Generate trend data (mock data for demonstration)
-    const trendData = this.generateLoyaltyTrendData();
+    const trendData = this.generateFilteredTrendData(filters);
     
     return {
       // Basic metrics
@@ -427,9 +430,12 @@ class LoyaltyService {
   }
 
   // Get customer segmentation data
-  static getCustomerSegmentation() {
+  static getCustomerSegmentation(filters = {}) {
     const mockData = this.getMockLoyaltyData();
-    const customers = mockData.customers;
+    let customers = mockData.customers;
+    
+    // Apply filters to customer data
+    customers = this.applyFiltersToCustomers(customers, filters);
     
     const segments = {
       nuevos: customers.filter(c => (c.points || 0) === 0).length,
@@ -439,6 +445,97 @@ class LoyaltyService {
     };
     
     return segments;
+  }
+
+  // Apply filters to customer data
+  static applyFiltersToCustomers(customers, filters) {
+    let filteredCustomers = [...customers];
+    
+    // Date range filter
+    if (filters.dateRange && (filters.dateRange.start || filters.dateRange.end)) {
+      filteredCustomers = filteredCustomers.filter(customer => {
+        if (!customer.registrationDate) return false;
+        
+        const customerDate = new Date(customer.registrationDate);
+        const startDate = filters.dateRange.start ? new Date(filters.dateRange.start) : null;
+        const endDate = filters.dateRange.end ? new Date(filters.dateRange.end) : null;
+        
+        if (startDate && customerDate < startDate) return false;
+        if (endDate && customerDate > endDate) return false;
+        
+        return true;
+      });
+    }
+    
+    // Amount range filter (based on totalSpent)
+    if (filters.minAmount && filters.minAmount !== '') {
+      const minAmount = parseFloat(filters.minAmount);
+      filteredCustomers = filteredCustomers.filter(customer => 
+        (customer.totalSpent || 0) >= minAmount
+      );
+    }
+    
+    if (filters.maxAmount && filters.maxAmount !== '') {
+      const maxAmount = parseFloat(filters.maxAmount);
+      filteredCustomers = filteredCustomers.filter(customer => 
+        (customer.totalSpent || 0) <= maxAmount
+      );
+    }
+    
+    // Customer segment filter (using category field to represent segment)
+    if (filters.category && filters.category !== '') {
+      const segmentMap = {
+        'nuevos': 'nuevo',
+        'activos': 'activo', 
+        'frecuentes': 'frecuente',
+        'vip': 'vip'
+      };
+      
+      const targetSegment = segmentMap[filters.category] || filters.category;
+      filteredCustomers = filteredCustomers.filter(customer => 
+        customer.segment === targetSegment
+      );
+    }
+    
+    // Status filter (active/inactive based on points)
+    if (filters.status && filters.status !== '') {
+      if (filters.status === 'completed') {
+        // Customers with points (active)
+        filteredCustomers = filteredCustomers.filter(customer => 
+          (customer.points || 0) > 0
+        );
+      } else if (filters.status === 'pending') {
+        // Customers without points (inactive)
+        filteredCustomers = filteredCustomers.filter(customer => 
+          (customer.points || 0) === 0
+        );
+      }
+    }
+    
+    return filteredCustomers;
+  }
+
+  // Generate filtered trend data based on date range
+  static generateFilteredTrendData(filters) {
+    const mockData = this.getMockLoyaltyData();
+    let trendData = [...mockData.monthlyMetrics];
+    
+    // If date range is specified, filter trend data accordingly
+    if (filters.dateRange && (filters.dateRange.start || filters.dateRange.end)) {
+      const startDate = filters.dateRange.start ? new Date(filters.dateRange.start) : null;
+      const endDate = filters.dateRange.end ? new Date(filters.dateRange.end) : null;
+      
+      // For simplicity, we'll adjust the trend data based on the date range
+      // In a real application, this would query actual historical data
+      if (startDate && endDate) {
+        const monthsDiff = Math.abs(endDate.getMonth() - startDate.getMonth()) + 1;
+        if (monthsDiff < 6) {
+          trendData = trendData.slice(-monthsDiff);
+        }
+      }
+    }
+    
+    return trendData;
   }
 }
 
