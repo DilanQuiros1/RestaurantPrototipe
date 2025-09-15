@@ -1,0 +1,646 @@
+## Manejo de Promociones, Platos del Día y Descuentos en Productos del Menú
+
+Para manejar promociones, platos del día y descuentos en productos del menú (independiente del programa de lealtad), se recomienda el siguiente modelo:
+
+**Tabla:** `promociones`
+- id_promocion (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- nombre (VARCHAR)
+- descripcion (TEXT)
+- tipo (ENUM: 'descuento', '2x1', 'combo', 'plato_dia', 'otro')
+- valor (DECIMAL) — porcentaje o monto
+- fecha_inicio (DATETIME)
+- fecha_fin (DATETIME)
+- condiciones (TEXT)
+- activa (BOOL)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `producto_promocion`
+- id_producto (FK, INT)
+- id_promocion (FK, INT)
+- PRIMARY KEY (id_producto, id_promocion)
+
+**Tabla:** `platos_dia`
+- id_plato_dia (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- id_producto (FK, INT)
+- fecha (DATE)
+- precio_especial (DECIMAL)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Notas:**
+- Un producto puede estar en varias promociones y ser plato del día en fechas distintas.
+- Los descuentos pueden ser por porcentaje o monto fijo, y aplicarse a uno o varios productos.
+- Las promociones pueden tener condiciones (ej: solo ciertos días, mínimo de compra, etc.).
+- Los platos del día permiten asignar un producto especial y un precio especial para una fecha específica.
+
+**Ejemplo de consulta para obtener productos con promociones activas:**
+```sql
+SELECT p.*, pr.nombre AS promo_nombre, pr.tipo, pr.valor
+FROM productos p
+JOIN producto_promocion pp ON p.id_producto = pp.id_producto
+JOIN promociones pr ON pp.id_promocion = pr.id_promocion
+WHERE pr.activa = 1 AND NOW() BETWEEN pr.fecha_inicio AND pr.fecha_fin;
+```
+
+**Diferencia con programa de lealtad:**
+- Las promociones y descuentos se aplican directamente a productos o grupos de productos.
+- El programa de lealtad otorga puntos, niveles o premios por compras, pero no modifica el precio del producto en el momento de la venta.
+## Relación Productos e Ingredientes en SaaS
+
+Cada producto (opción del menú) tiene sus propios detalles: nombre, precio, descripción, imagen, etc. Los ingredientes se almacenan en una tabla propia, asociada al negocio. Se utiliza una tabla intermedia para la relación muchos a muchos.
+
+**Estructura SQL recomendada:**
+
+```sql
+CREATE TABLE ingredientes (
+  id_ingrediente INT AUTO_INCREMENT PRIMARY KEY,
+  id_negocio INT,
+  nombre VARCHAR(100) NOT NULL,
+  descripcion TEXT,
+  FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE
+);
+
+CREATE TABLE productos (
+  id_producto INT AUTO_INCREMENT PRIMARY KEY,
+  id_negocio INT,
+  nombre VARCHAR(100) NOT NULL,
+  precio DECIMAL(10,2) NOT NULL,
+  descripcion TEXT,
+  imagen VARCHAR(255),
+  -- otros campos...
+  FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE
+);
+
+CREATE TABLE producto_ingrediente (
+  id_producto INT,
+  id_ingrediente INT,
+  es_opcional BOOLEAN DEFAULT FALSE,
+  PRIMARY KEY (id_producto, id_ingrediente),
+  FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE,
+  FOREIGN KEY (id_ingrediente) REFERENCES ingredientes(id_ingrediente) ON DELETE CASCADE
+);
+```
+
+Así, cada producto puede tener uno o muchos ingredientes, y cada ingrediente puede ser usado en varios productos, todo separado por negocio.
+
+# Modelo de Base de Datos Relacional para RestaurantPrototipe (Multi-Tenant SaaS)
+
+Este documento describe la estructura de la base de datos relacional, organizada por módulos funcionales, incluyendo la gestión de usuarios generales (negocios) para soportar multi-tenencia SaaS. Cada registro principal está asociado a un negocio, permitiendo que múltiples negocios utilicen el sistema de forma independiente.
+## 0. Negocios (Usuarios Generales)
+**Tabla:** `negocios`
+- id_negocio (PK, INT, AUTO_INCREMENT)
+- nombre (VARCHAR)
+- tipo_negocio (VARCHAR) — restaurante, cafetería, bar, etc.
+- email (VARCHAR)
+- telefono (VARCHAR)
+- direccion (VARCHAR)
+- password_hash (VARCHAR)
+- fecha_registro (DATETIME)
+- estado (ENUM: 'activo', 'inactivo')
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Notas:**
+- Cada negocio tiene un usuario general para login.
+- El campo `tipo_negocio` permite personalizar la experiencia y reportes.
+
+---
+
++## 1. Cuadrícula de Mesas (Salón)
+**Tabla:** `cuadricula_salon`
+- id_cuadricula (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- filas (INT) — cantidad de filas configuradas
+- columnas (INT) — cantidad de columnas configuradas
+- nombre (VARCHAR) — nombre del salón o área
+- descripcion (VARCHAR)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `mesas`
+- id_mesa (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- id_cuadricula (FK, INT) — referencia a cuadrícula
+- fila (INT) — número de fila en la cuadrícula
+- columna (INT) — número de columna en la cuadrícula
+- numero (INT) — número visible de la mesa
+- estado (ENUM: 'libre', 'ocupada', 'reservada', 'inactiva')
+- capacidad (INT)
+- descripcion (VARCHAR)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Notas:**
+- Se pueden crear varias cuadrículas (salones/áreas) por negocio.
+- Las filas y columnas de la cuadrícula son editables.
+- Las mesas se asignan a una posición específica de la cuadrícula.
+
+---
+
++## 2. Menús y Productos (Detalles Avanzados)
+**Tabla:** `categorias`
+- id_categoria (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- nombre (VARCHAR)
+- descripcion (TEXT)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `productos`
+- id_producto (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- id_categoria (FK, INT)
+- nombre (VARCHAR)
+- descripcion (TEXT)
+- precio (DECIMAL)
+- disponible (BOOL)
+- detalles (TEXT)
+- es_combo (BOOL) — si es un combo
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `imagenes_producto`
+- id_imagen (PK, INT, AUTO_INCREMENT)
+- id_producto (FK, INT)
+- url (VARCHAR)
+- descripcion (VARCHAR)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `opciones_producto`
+- id_opcion (PK, INT, AUTO_INCREMENT)
+- id_producto (FK, INT)
+- nombre (VARCHAR) — ejemplo: tamaño, tipo de pan
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `valores_opcion`
+- id_valor (PK, INT, AUTO_INCREMENT)
+- id_opcion (FK, INT)
+- valor (VARCHAR) — ejemplo: grande, mediano, pequeño
+- precio_extra (DECIMAL) — si aplica
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `ingredientes`
+- id_ingrediente (PK, INT, AUTO_INCREMENT)
+- nombre (VARCHAR)
+- descripcion (TEXT)
+
+**Tabla:** `producto_ingrediente`
+- id_producto (FK, INT)
+- id_ingrediente (FK, INT)
+- es_opcional (BOOL)
+- PRIMARY KEY (id_producto, id_ingrediente)
+
+**Tabla:** `alergenos`
+- id_alergeno (PK, INT, AUTO_INCREMENT)
+- nombre (VARCHAR)
+- descripcion (TEXT)
+
+**Tabla:** `producto_alergeno`
+- id_producto (FK, INT)
+- id_alergeno (FK, INT)
+- PRIMARY KEY (id_producto, id_alergeno)
+
+**Tabla:** `combo_detalle`
+- id_combo (FK, INT) — referencia a producto combo
+- id_producto (FK, INT) — producto incluido en el combo
+- cantidad (INT)
+- PRIMARY KEY (id_combo, id_producto)
+
+**Notas:**
+- Un producto puede tener múltiples opciones y variantes.
+- Se pueden definir combos como productos que agrupan otros productos.
+- Ingredientes y alérgenos permiten información detallada para el menú.
+
+---
+
+## 3. Cocina
+**Tabla:** `pedidos`
+- id_pedido (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT) — referencia a negocios
+- id_mesa (FK, INT)
+- fecha (DATETIME)
+- estado (ENUM: 'pendiente', 'en_preparacion', 'listo', 'entregado', 'cancelado')
+- total (DECIMAL)
+
+**Tabla:** `pedido_producto`
+- id_pedido (FK, INT)
+- id_producto (FK, INT)
+- cantidad (INT)
+- precio_unitario (DECIMAL)
+- observaciones (TEXT)
+
+**Tabla:** `observaciones_comunes`
+- id_observacion (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT) — referencia a negocios
+- texto (VARCHAR)
+
+**Notas:**
+- Permite gestionar el flujo de pedidos y su estado en cocina.
+- Observaciones comunes para facilitar la toma de pedidos.
+## 2. Menús, Promociones y Platos del Día
+**Tabla:** `promociones`
+- id_promocion (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- nombre (VARCHAR)
+- descripcion (TEXT)
+- tipo (ENUM: 'descuento', '2x1', 'combo', 'plato_dia', 'otro')
+- valor (DECIMAL) — porcentaje o monto
+- fecha_inicio (DATETIME)
+- fecha_fin (DATETIME)
+- condiciones (TEXT)
+- activa (BOOL)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `producto_promocion`
+- id_producto (FK, INT)
+- id_promocion (FK, INT)
+- PRIMARY KEY (id_producto, id_promocion)
+
+**Tabla:** `platos_dia`
+- id_plato_dia (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- id_producto (FK, INT)
+- fecha (DATE)
+- precio_especial (DECIMAL)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Notas:**
+- Un producto puede estar en varias promociones y ser plato del día.
+- fecha_registro (DATETIME)
+## 4. Programas de Lealtad (Características Completas)
+**Tabla:** `niveles_lealtad`
+- id_nivel (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- nombre (VARCHAR)
+- puntos_minimos (INT)
+- recompensa (VARCHAR)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `canjes_lealtad`
+- id_canje (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- id_cliente (FK, INT)
+- id_programa (FK, INT)
+- id_premio (FK, INT, NULLABLE)
+- puntos_canjeados (INT)
+- fecha (DATETIME)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `premios_lealtad`
+- id_premio (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- nombre (VARCHAR)
+- descripcion (TEXT)
+- puntos_requeridos (INT)
+- stock (INT)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Notas:**
+- Se pueden definir niveles de lealtad, premios y canjes por cliente.
+- id_movimiento (PK, INT, AUTO_INCREMENT)
+## 5. Caja y Gestión de Ventas
+**Tabla:** `ventas`
+- id_venta (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- id_pedido (FK, INT)
+- id_cliente (FK, INT, NULLABLE)
+- fecha (DATETIME)
+- total (DECIMAL)
+- estado (ENUM: 'pagada', 'pendiente', 'anulada')
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `arqueos_caja`
+- id_arqueo (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT)
+- usuario (VARCHAR)
+- fecha_apertura (DATETIME)
+- fecha_cierre (DATETIME, NULLABLE)
+- monto_inicial (DECIMAL)
+- monto_final (DECIMAL, NULLABLE)
+- observaciones (TEXT)
+- estado (ENUM: 'abierto', 'cerrado')
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Tabla:** `movimientos_caja`
+- id_movimiento (PK, INT, AUTO_INCREMENT)
+- id_arqueo (FK, INT)
+- tipo (ENUM: 'ingreso', 'egreso')
+- concepto (VARCHAR)
+- monto (DECIMAL)
+- fecha (DATETIME)
+- observaciones (TEXT)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+
+**Notas:**
+- Se registra cada venta, arqueo de caja y movimiento de dinero (ingresos/egresos).
+- puntos (INT)
++## 6. Relaciones Clave y FK (Actualizadas)
++- Un producto puede tener muchas imágenes, opciones, ingredientes y alérgenos.
++- Un producto puede ser parte de un combo (producto es_combo=true).
++- Ingredientes y alérgenos permiten información detallada para el menú.
++- Un producto puede estar en varias promociones y ser plato del día.
++- Un cliente puede tener muchos movimientos de puntos y canjes.
++- Un programa de lealtad puede tener varios niveles y premios.
++- Se registra cada venta, arqueo de caja y movimiento de dinero.
+- puntos_por_compra (INT)
+- recompensa (VARCHAR)
+
+**Notas:**
+- Un cliente puede acumular y canjear puntos.
+- Los movimientos de puntos se asocian a pedidos.
+
+---
+
+## 5. Pagos y Transacciones
+**Tabla:** `pagos`
+- id_pago (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT) — referencia a negocios
+- id_pedido (FK, INT)
+- metodo_pago (ENUM: 'efectivo', 'tarjeta', 'otro')
+- monto (DECIMAL)
+- fecha (DATETIME)
+
+**Tabla:** `transacciones`
+- id_transaccion (PK, INT, AUTO_INCREMENT)
+- id_negocio (FK, INT) — referencia a negocios
+- id_pago (FK, INT)
+- tipo (ENUM: 'venta', 'devolucion')
+- fecha (DATETIME)
+- monto (DECIMAL)
+
+---
+
++## 6. Relaciones Clave y FK
++- Cada entidad principal está asociada a un negocio (`id_negocio`).
++- Un negocio puede tener varias cuadrículas de salón.
++- Una cuadrícula puede tener muchas mesas.
++- Una mesa pertenece a una cuadrícula y puede tener muchos pedidos.
++- Un pedido puede tener muchos productos (pedido_producto).
++- Un producto puede tener muchas imágenes, opciones, ingredientes y alérgenos.
++- Un producto puede ser parte de un combo (producto es_combo=true).
++- Un cliente puede tener muchos movimientos de puntos.
++- Un pago está asociado a un pedido y genera una transacción.
++- Todas las FK deben tener ON DELETE CASCADE para mantener la integridad referencial.
+
+---
+
+## 7. Consideraciones Técnicas
+- Todas las tablas deben tener campos de auditoría: created_at, updated_at (DATETIME).
+- Integridad referencial con claves foráneas.
+- Restricciones de unicidad y no nulos donde aplique.
+- Adaptar los tipos de datos según el motor SQL elegido (MySQL, PostgreSQL, etc.).
+
+---
+
+## 8. Ejemplo de Esquema SQL (MySQL)
+```sql
+CREATE TABLE negocios (
+  id_negocio INT AUTO_INCREMENT PRIMARY KEY,
+  ```sql
+  CREATE TABLE negocios (
+    id_negocio INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    tipo_negocio VARCHAR(50),
+    email VARCHAR(100) NOT NULL,
+    telefono VARCHAR(20),
+    direccion VARCHAR(255),
+    password_hash VARCHAR(255) NOT NULL,
+    fecha_registro DATETIME,
+    estado ENUM('activo','inactivo') DEFAULT 'activo',
+    created_at DATETIME,
+    updated_at DATETIME
+  );
+
+  CREATE TABLE cuadricula_salon (
+    id_cuadricula INT AUTO_INCREMENT PRIMARY KEY,
+    id_negocio INT,
+    filas INT NOT NULL,
+    columnas INT NOT NULL,
+    nombre VARCHAR(100),
+    descripcion VARCHAR(255),
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE
+  );
+
+  CREATE TABLE mesas (
+    id_mesa INT AUTO_INCREMENT PRIMARY KEY,
+    id_negocio INT,
+    id_cuadricula INT,
+    fila INT NOT NULL,
+    columna INT NOT NULL,
+    numero INT NOT NULL,
+    estado ENUM('libre','ocupada','reservada','inactiva') NOT NULL,
+    capacidad INT NOT NULL,
+    descripcion VARCHAR(255),
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE,
+    FOREIGN KEY (id_cuadricula) REFERENCES cuadricula_salon(id_cuadricula) ON DELETE CASCADE
+  );
+
+  CREATE TABLE categorias (
+    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+    id_negocio INT,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE
+  );
+
+  CREATE TABLE productos (
+    id_producto INT AUTO_INCREMENT PRIMARY KEY,
+    id_negocio INT,
+    id_categoria INT,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    precio DECIMAL(10,2) NOT NULL,
+    disponible BOOLEAN DEFAULT TRUE,
+    detalles TEXT,
+    es_combo BOOLEAN DEFAULT FALSE,
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE,
+    FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria) ON DELETE SET NULL
+  );
+
+  CREATE TABLE imagenes_producto (
+    id_imagen INT AUTO_INCREMENT PRIMARY KEY,
+    id_producto INT,
+    url VARCHAR(255) NOT NULL,
+    descripcion VARCHAR(255),
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE
+  );
+
+  CREATE TABLE opciones_producto (
+    id_opcion INT AUTO_INCREMENT PRIMARY KEY,
+    id_producto INT,
+    nombre VARCHAR(100) NOT NULL,
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE
+  );
+
+  CREATE TABLE valores_opcion (
+    id_valor INT AUTO_INCREMENT PRIMARY KEY,
+    id_opcion INT,
+    valor VARCHAR(100) NOT NULL,
+    precio_extra DECIMAL(10,2) DEFAULT 0,
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_opcion) REFERENCES opciones_producto(id_opcion) ON DELETE CASCADE
+  );
+
+  CREATE TABLE ingredientes (
+    id_ingrediente INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT
+  );
+
+  CREATE TABLE producto_ingrediente (
+    id_producto INT,
+    id_ingrediente INT,
+    es_opcional BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (id_producto, id_ingrediente),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE,
+    FOREIGN KEY (id_ingrediente) REFERENCES ingredientes(id_ingrediente) ON DELETE CASCADE
+  );
+
+  CREATE TABLE alergenos (
+    id_alergeno INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT
+  );
+
+  CREATE TABLE producto_alergeno (
+    id_producto INT,
+    id_alergeno INT,
+    PRIMARY KEY (id_producto, id_alergeno),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE,
+    FOREIGN KEY (id_alergeno) REFERENCES alergenos(id_alergeno) ON DELETE CASCADE
+  );
+
+  CREATE TABLE combo_detalle (
+    id_combo INT,
+    id_producto INT,
+    cantidad INT NOT NULL,
+    PRIMARY KEY (id_combo, id_producto),
+    FOREIGN KEY (id_combo) REFERENCES productos(id_producto) ON DELETE CASCADE,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE
+  );
+
+  CREATE TABLE pedidos (
+    id_pedido INT AUTO_INCREMENT PRIMARY KEY,
+    id_negocio INT,
+    id_mesa INT,
+    fecha DATETIME NOT NULL,
+    estado ENUM('pendiente','en_preparacion','listo','entregado','cancelado') NOT NULL,
+    total DECIMAL(10,2),
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE,
+    FOREIGN KEY (id_mesa) REFERENCES mesas(id_mesa) ON DELETE SET NULL
+  );
+
+  CREATE TABLE pedido_producto (
+    id_pedido INT,
+    id_producto INT,
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(10,2) NOT NULL,
+    observaciones TEXT,
+    PRIMARY KEY (id_pedido, id_producto),
+    FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido) ON DELETE CASCADE,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE
+  );
+
+  CREATE TABLE observaciones_comunes (
+    id_observacion INT AUTO_INCREMENT PRIMARY KEY,
+    id_negocio INT,
+    texto VARCHAR(255) NOT NULL,
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE
+  );
+
+  CREATE TABLE clientes (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    id_negocio INT,
+    nombre VARCHAR(100),
+    telefono VARCHAR(20),
+    email VARCHAR(100),
+    fecha_registro DATETIME,
+    puntos_actuales INT DEFAULT 0,
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE
+  );
+
+  CREATE TABLE movimientos_puntos (
+    id_movimiento INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT,
+    id_pedido INT,
+    puntos INT NOT NULL,
+    tipo ENUM('acumulacion','canje') NOT NULL,
+    fecha DATETIME,
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE CASCADE,
+    FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido) ON DELETE SET NULL
+  );
+
+  CREATE TABLE programas_lealtad (
+    id_programa INT AUTO_INCREMENT PRIMARY KEY,
+    id_negocio INT,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    puntos_por_compra INT,
+    recompensa VARCHAR(255),
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE
+  );
+
+  CREATE TABLE pagos (
+    id_pago INT AUTO_INCREMENT PRIMARY KEY,
+    id_negocio INT,
+    id_pedido INT,
+    metodo_pago ENUM('efectivo','tarjeta','otro') NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    fecha DATETIME,
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE,
+    FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido) ON DELETE SET NULL
+  );
+
+  CREATE TABLE transacciones (
+    id_transaccion INT AUTO_INCREMENT PRIMARY KEY,
+    id_negocio INT,
+    id_pago INT,
+    tipo ENUM('venta','devolucion') NOT NULL,
+    fecha DATETIME,
+    monto DECIMAL(10,2),
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (id_negocio) REFERENCES negocios(id_negocio) ON DELETE CASCADE,
+    FOREIGN KEY (id_pago) REFERENCES pagos(id_pago) ON DELETE SET NULL
+  );
+  ```
+Este esquema puede ser adaptado según necesidades futuras. No incluye usuarios ni roles, y está enfocado en la operación general del restaurante.
