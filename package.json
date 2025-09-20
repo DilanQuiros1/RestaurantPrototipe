@@ -50,5 +50,6 @@
   },
   "devDependencies": {
     "json-server": "^1.0.0-beta.3"
-  }
+  },
+  "proxy": "http://127.0.0.1:8000"
 }

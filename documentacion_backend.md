@@ -144,7 +144,7 @@ Variables de entorno (parcial):
 
 ### Dominio restaurante (resumen de tablas)
 
-- Menú: productos, categorías (globales o por organización), imágenes, ingredientes, producto_ingrediente, opciones/valores, promociones, producto_promocion, platos_dia.
+- Menú: productos, categorías (globales o por organización), imágenes, adicionales, producto_adicional, opciones/valores, promociones, producto_promocion, platos_dia.
 - Mesas: cuadricula_salon, mesas.
 - Cocina/Pedidos: pedidos, pedido_producto, observaciones_comunes.
 - Lealtad: clientes, movimientos_puntos, programas_lealtad, niveles_lealtad, premios_lealtad, canjes_lealtad.
@@ -165,7 +165,7 @@ usuarios (id) 1--N logs_auditoria (actor_id)
 
  organizaciones (id) 1--N productos (id_organizacion)
  productos (id) N--1 categorias (id_categoria)
- productos (id) N--M ingredientes (producto_ingrediente)
+ productos (id) N--M adicionales (producto_adicional)
  productos (id) N--M promociones (producto_promocion)
  organizaciones (id) 1--N cuadricula_salon (id_organizacion) 1--N mesas (id_cuadricula)
  mesas (id) 1--N pedidos (id_mesa) 1--N pedido_producto (id_pedido)
@@ -336,3 +336,261 @@ Extras (opcionales siguientes sprints):
 - Observabilidad (tracing + métricas), rate limiting, caching selectivo.
 - Integraciones de pagos, colas (RabbitMQ/SQS) para procesos asíncronos.
 - Feature flags y AB testing.
+
+---
+
+## 8. Flujo: Alta de Producto con Adicionales (reemplaza Ingredientes)
+
+Objetivo: Al crear/editar un producto del menú, permitir seleccionar “Adicionales” (ej.: Papas Fritas, Queso Extra) desde un catálogo provisto por la API y mostrar los seleccionados en tiempo real.
+
+### Modelo de datos (BD)
+
+- `adicionales`: catálogo global/por organización con campos mínimos: `id_adicional`, `nombre_adicional`, `estado`, `id_organizacion` (si aplica multi-tenant).
+- `producto_adicional`: tabla N:M entre `productos` y `adicionales`.
+
+Ejemplo SQL mínimo:
+
+```
+CREATE TABLE adicionales (
+  id_adicional INT PRIMARY KEY,
+  id_organizacion INT NULL,
+  nombre_adicional VARCHAR(100) NOT NULL,
+  estado CHAR(1) NOT NULL DEFAULT 'A'
+);
+
+CREATE TABLE producto_adicional (
+  id_producto INT NOT NULL,
+  id_adicional INT NOT NULL,
+  PRIMARY KEY (id_producto, id_adicional)
+);
+```
+
+### API de catálogo de adicionales (existente)
+
+- GET `http://127.0.0.1:8000/adicionales/` → devuelve lista de adicionales activos.
+
+Respuesta de ejemplo:
+
+```
+[
+  { "id_adicional": 1, "nombre_adicional": "Papas Fritas", "estado": "A" },
+  { "id_adicional": 2, "nombre_adicional": "Queso Extra", "estado": "A" },
+  ...
+]
+```
+
+Sugerencias:
+
+- Filtrar por `estado = 'A'` y por `id_organizacion` (si multi-tenant: `?org_id=...`).
+
+### API para creación/edición de producto (contrato sugerido)
+
+- POST `/api/v1/productos` y PUT `/api/v1/productos/{id}`
+- Payload recomendado (resumen):
+
+```
+{
+  "nombre": "Hamburguesa Clásica",
+  "descripcion": "Carne 120g, pan brioche",
+  "precio": 6.50,
+  "id_categoria": 3,
+  "imagenes": ["https://.../img1.jpg"],
+  "adicionales": [1, 2, 5]  // IDs de adicionales seleccionados
+}
+```
+
+- Comportamiento del backend:
+  - Validar que todos los `adicionales` existan y estén activos.
+  - Persistir producto y su N:M en `producto_adicional` (upsert en edición: sincronizar conjunto).
+
+### UI/UX recomendado (web)
+
+- Campo de búsqueda/autocompletado “Adicionales” que consulta `GET /adicionales/` y lista los resultados activos.
+- Al seleccionar un adicional, se agrega a un “chip”/etiqueta de seleccionados debajo del input.
+- Posibilidad de eliminar un adicional seleccionado (botón “x” en cada chip).
+- Validación: límite razonable (p. ej., máx. 10 adicionales por producto) y evitar duplicados.
+
+### Ejemplo de integración (React) para seleccionar adicionales
+
+Este selector permite: ver la lista de adicionales, buscarlos, seleccionarlos/deseleccionarlos con checkbox, ver cuántos están seleccionados y limpiarlos. Solo gestiona la selección local; los IDs elegidos se usarán luego para guardar el producto en otro endpoint.
+
+```jsx
+import { useEffect, useMemo, useState } from "react";
+
+// Props
+// - value: number[] (IDs seleccionados)
+// - onChange: (ids: number[]) => void
+// - orgId?: number | string (opcional, para filtrar por organización)
+export default function AdicionalesSelector({ value = [], onChange, orgId }) {
+  const [catalogo, setCatalogo] = useState([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const cargar = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const url = new URL("http://127.0.0.1:8000/adicionales/");
+        if (orgId !== undefined && orgId !== null) {
+          url.searchParams.set("org_id", String(orgId));
+        }
+        const res = await fetch(url.toString());
+        const data = await res.json();
+        // Solo activos
+        setCatalogo(
+          Array.isArray(data) ? data.filter((a) => a.estado === "A") : []
+        );
+      } catch (e) {
+        console.error(e);
+        setError("No se pudo cargar el catálogo de adicionales");
+      } finally {
+        setLoading(false);
+      }
+    };
+    cargar();
+  }, [orgId]);
+
+  const resultados = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return catalogo;
+    return catalogo.filter((a) => a.nombre_adicional.toLowerCase().includes(q));
+  }, [catalogo, query]);
+
+  const toggle = (id) => {
+    if (value.includes(id)) {
+      onChange(value.filter((v) => v !== id));
+    } else {
+      onChange([...value, id]);
+    }
+  };
+
+  const clearAll = () => onChange([]);
+
+  return (
+    <div>
+      <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>
+        Adicionales
+      </label>
+      <input
+        placeholder="Buscar adicional..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        style={{ width: "100%", padding: 6, marginBottom: 8 }}
+      />
+
+      {loading && <div>Cargando adicionales...</div>}
+      {error && <div style={{ color: "#b00020" }}>{error}</div>}
+
+      <div
+        style={{
+          maxHeight: 180,
+          overflowY: "auto",
+          border: "1px solid #eee",
+          padding: 8,
+        }}
+      >
+        {resultados.length === 0 && !loading ? (
+          <div>No hay resultados</div>
+        ) : (
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {resultados.map((a) => (
+              <li key={a.id_adicional} style={{ marginBottom: 6 }}>
+                <label style={{ cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={value.includes(a.id_adicional)}
+                    onChange={() => toggle(a.id_adicional)}
+                    style={{ marginRight: 8 }}
+                  />
+                  {a.nombre_adicional}
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div
+        style={{
+          marginTop: 10,
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
+        <strong>Seleccionados: {value.length}</strong>
+        {value.length > 0 && (
+          <button type="button" onClick={clearAll}>
+            Limpiar
+          </button>
+        )}
+      </div>
+
+      {value.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          {catalogo
+            .filter((a) => value.includes(a.id_adicional))
+            .map((a) => (
+              <span
+                key={a.id_adicional}
+                style={{
+                  border: "1px solid #ccc",
+                  padding: "4px 8px",
+                  marginRight: 6,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                {a.nombre_adicional}
+                <button type="button" onClick={() => toggle(a.id_adicional)}>
+                  x
+                </button>
+              </span>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+Uso del selector en el formulario de producto (solo selección; el guardado ocurre luego en otro endpoint):
+
+```jsx
+import { useState } from "react";
+import AdicionalesSelector from "./AdicionalesSelector";
+
+function ProductoForm({ orgId }) {
+  const [adicionales, setAdicionales] = useState([]); // array de IDs seleccionados
+
+  const continuar = async () => {
+    // Estos IDs se usarán para guardar el producto en OTRO endpoint de tu API.
+    // Ejemplo (reemplaza la URL por tu endpoint real):
+    const payload = { /* otros campos del producto */, adicionales };
+    await fetch("/api/v1/tu-endpoint-de-guardado", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  };
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); continuar(); }}>
+      {/* otros campos del formulario (nombre, precio, etc.) */}
+      <AdicionalesSelector value={adicionales} onChange={setAdicionales} orgId={orgId} />
+      <div style={{ marginTop: 12 }}>IDs seleccionados: {JSON.stringify(adicionales)}</div>
+      <button type="submit" style={{ marginTop: 12 }}>Continuar</button>
+    </form>
+  );
+}
+```
+
+### Edge cases y validaciones
+
+- Si un adicional cambia a inactivo, impedir su selección y advertir al editar productos que lo tengan.
+- Manejar catálogos extensos con paginación/scroll virtual en el frontend.
+- En multi-tenant, asegurar que los adicionales pertenecen a la misma organización del producto.
+- Considerar precios extra por adicional en una versión futura (`producto_adicional.precio_extra`).

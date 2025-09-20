@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import Button from '../../components/common/Button';
-import ProductModal from './ProductModal';
-import menuService from '../../services/menuService';
-import imageService from '../../services/imageService';
-import { getImageByDishName } from '../menu/menuImages';
-import './MenuManagement.css';
+import React, { useState, useEffect } from "react";
+import Button from "../../components/common/Button";
+import ProductModal from "./ProductModal";
+import menuService from "../../services/menuService";
+import imageService from "../../services/imageService";
+import { getImageByDishName } from "../menu/menuImages";
+import "./MenuManagement.css";
 
-const MenuManagement = () => {
+const MenuManagement = ({ idNegocio }) => {
   const [products, setProducts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState("all");
 
   // Cargar productos desde el servicio
   useEffect(() => {
@@ -19,25 +19,38 @@ const MenuManagement = () => {
 
   // Función para obtener la imagen correcta (personalizada o predefinida)
   const getProductImage = (product) => {
+    // Seguridad: producto o image pueden venir indefinidos
+    if (!product) {
+      return getImageByDishName("Filete de Res");
+    }
+
     // Si el producto usa imagen personalizada, buscar en el servicio
-    if (product.image === 'custom') {
+    if (product.image === "custom") {
       const savedImage = imageService.getImageByProductId(product.id);
-      if (savedImage) {
+      if (savedImage?.data) {
         return savedImage.data;
       }
     }
 
     // Si la imagen comienza con data:, blob: o http, es una imagen personalizada legacy
-    if (product.image && (
-      product.image.startsWith('data:image') || 
-      product.image.startsWith('blob:') || 
-      product.image.startsWith('http')
-    )) {
+    if (
+      typeof product.image === "string" &&
+      product.image &&
+      (product.image.startsWith("data:image") ||
+        product.image.startsWith("blob:") ||
+        product.image.startsWith("http"))
+    ) {
       return product.image;
     }
-    
-    // Si no, usar el servicio de imágenes predefinidas
-    return getImageByDishName(product.image);
+
+    // Si no hay nombre válido, usar una imagen por defecto
+    const dishName =
+      typeof product.image === "string" && product.image.trim()
+        ? product.image
+        : "Filete de Res";
+
+    // Servicio de imágenes predefinidas
+    return getImageByDishName(dishName);
   };
 
   const loadProducts = () => {
@@ -46,15 +59,16 @@ const MenuManagement = () => {
   };
 
   const categories = [
-    { id: 'all', label: 'Todos los productos', icon: '📋' },
-    { id: 'comidas-rapidas', label: 'Comidas Rápidas', icon: '🍔' },
-    { id: 'platos-fuertes', label: 'Platos Fuertes', icon: '🍽️' },
-    { id: 'bebidas', label: 'Bebidas', icon: '🥤' }
+    { id: "all", label: "Todos los productos", icon: "📋" },
+    { id: "comidas-rapidas", label: "Comidas Rápidas", icon: "🍔" },
+    { id: "platos-fuertes", label: "Platos Fuertes", icon: "🍽️" },
+    { id: "bebidas", label: "Bebidas", icon: "🥤" },
   ];
 
-  const filteredProducts = activeCategory === 'all' 
-    ? products 
-    : products.filter(product => product.category === activeCategory);
+  const filteredProducts =
+    activeCategory === "all"
+      ? products
+      : products.filter((product) => product?.category === activeCategory);
 
   const handleAddProduct = () => {
     setEditingProduct(null);
@@ -67,10 +81,12 @@ const MenuManagement = () => {
   };
 
   const handleDeleteProduct = (productId) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+    if (
+      window.confirm("¿Estás seguro de que quieres eliminar este producto?")
+    ) {
       // Eliminar imagen asociada si existe
       imageService.removeImageByProductId(productId);
-      
+
       // Eliminar producto
       menuService.permanentlyDeleteItem(productId);
       loadProducts(); // Recargar lista
@@ -91,32 +107,46 @@ const MenuManagement = () => {
   };
 
   const handleSaveProduct = (productData) => {
+    // Si viene de ProductModal tras una llamada real a la API
+    if (productData && productData.success) {
+      // Aquí podríamos recargar desde API si tuviéramos un endpoint GET.
+      // Por ahora, cerramos el modal y mantenemos el listado actual local.
+      setIsModalOpen(false);
+      setEditingProduct(null);
+      return;
+    }
+
     let savedProduct;
-    
+
     if (editingProduct) {
       // Editar producto existente
       savedProduct = menuService.updateItem(editingProduct.id, productData);
     } else {
       // Agregar nuevo producto
       savedProduct = menuService.addItem(productData);
-      
+
       // Si había una imagen temporal, actualizarla con el ID real del producto
       if (productData.tempImageId && savedProduct?.id) {
         try {
           // Obtener la imagen temporal
-          const tempImage = imageService.getAllImages()[productData.tempImageId];
+          const tempImage =
+            imageService.getAllImages()[productData.tempImageId];
           if (tempImage) {
             // Guardar con el ID real del producto
-            imageService.saveImage(savedProduct.id, tempImage.data, tempImage.fileName);
+            imageService.saveImage(
+              savedProduct.id,
+              tempImage.data,
+              tempImage.fileName
+            );
             // Eliminar la imagen temporal
             imageService.removeImageById(productData.tempImageId);
           }
         } catch (error) {
-          console.error('Error al actualizar imagen del producto:', error);
+          console.error("Error al actualizar imagen del producto:", error);
         }
       }
     }
-    
+
     loadProducts(); // Recargar lista
     setIsModalOpen(false);
     setEditingProduct(null);
@@ -127,12 +157,12 @@ const MenuManagement = () => {
     setEditingProduct(null);
   };
 
-  const handleResetMenu = () => {
-    if (window.confirm('¿Estás seguro de que quieres resetear el menú a los valores originales? Esto eliminará todos los cambios.')) {
-      menuService.resetToOriginal();
-      loadProducts();
-    }
-  };
+  // const handleResetMenu = () => {
+  //   if (window.confirm('¿Estás seguro de que quieres resetear el menú a los valores originales? Esto eliminará todos los cambios.')) {
+  //     menuService.resetToOriginal();
+  //     loadProducts();
+  //   }
+  // };
 
   return (
     <div className="menu-management">
@@ -149,8 +179,8 @@ const MenuManagement = () => {
           >
             🔄 Resetear Menú
           </Button> */}
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleAddProduct}
             className="add-product-btn"
           >
@@ -160,10 +190,12 @@ const MenuManagement = () => {
       </div>
 
       <div className="category-filters">
-        {categories.map(category => (
+        {categories.map((category) => (
           <button
             key={category.id}
-            className={`category-filter ${activeCategory === category.id ? 'active' : ''}`}
+            className={`category-filter ${
+              activeCategory === category.id ? "active" : ""
+            }`}
             onClick={() => setActiveCategory(category.id)}
           >
             <span className="filter-icon">{category.icon}</span>
@@ -173,71 +205,98 @@ const MenuManagement = () => {
       </div>
 
       <div className="products-grid">
-        {filteredProducts.map(product => (
-          <div key={product.id} className={`product-card ${!product.isVisible ? 'invisible' : ''}`}>
+        {filteredProducts.map((product) => (
+          <div
+            key={product.id}
+            className={`product-card ${!product.isVisible ? "invisible" : ""}`}
+          >
             <div className="product-header">
               <div className="product-image">
-                <img 
-                  src={getProductImage(product)} 
-                  alt={product.name}
+                <img
+                  src={getProductImage(product)}
+                  alt={product?.name || "Producto"}
                   className="product-img"
                 />
               </div>
               <div className="product-controls">
                 <button
-                  className={`availability-toggle ${product.isAvailable ? 'available' : 'unavailable'}`}
+                  className={`availability-toggle ${
+                    product.isAvailable ? "available" : "unavailable"
+                  }`}
                   onClick={() => handleToggleAvailability(product.id)}
-                  title={product.isAvailable ? 'Marcar como no disponible' : 'Marcar como disponible'}
+                  title={
+                    product.isAvailable
+                      ? "Marcar como no disponible"
+                      : "Marcar como disponible"
+                  }
                 >
-                  {product.isAvailable ? '✅' : '❌'}
+                  {product.isAvailable ? "✅" : "❌"}
                 </button>
                 <button
-                  className={`visibility-toggle ${product.isVisible ? 'visible' : 'hidden'}`}
+                  className={`visibility-toggle ${
+                    product.isVisible ? "visible" : "hidden"
+                  }`}
                   onClick={() => handleToggleVisibility(product.id)}
-                  title={product.isVisible ? 'Ocultar producto' : 'Mostrar producto'}
+                  title={
+                    product.isVisible ? "Ocultar producto" : "Mostrar producto"
+                  }
                 >
-                  {product.isVisible ? '👁️' : '🙈'}
+                  {product.isVisible ? "👁️" : "🙈"}
                 </button>
               </div>
             </div>
-            
+
             <div className="product-content">
-              <h3 className="product-name">{product.name}</h3>
+              <h3 className="product-name">{product?.name || "Sin nombre"}</h3>
               <div className="product-status">
-                <span className={`status-badge ${product.isVisible ? 'visible' : 'hidden'}`}>
-                  {product.isVisible ? 'Visible' : 'Oculto'}
+                <span
+                  className={`status-badge ${
+                    product.isVisible ? "visible" : "hidden"
+                  }`}
+                >
+                  {product.isVisible ? "Visible" : "Oculto"}
                 </span>
-                <span className={`status-badge ${product.isAvailable ? 'available' : 'unavailable'}`}>
-                  {product.isAvailable ? 'Disponible' : 'No disponible'}
+                <span
+                  className={`status-badge ${
+                    product.isAvailable ? "available" : "unavailable"
+                  }`}
+                >
+                  {product.isAvailable ? "Disponible" : "No disponible"}
                 </span>
               </div>
-              <p className="product-description">{product.description}</p>
+              <p className="product-description">
+                {product?.description || ""}
+              </p>
               <div className="product-info">
-                <div className="product-price">${product.price.toFixed(2)}</div>
+                <div className="product-price">
+                  ${Number(product?.price || 0).toFixed(2)}
+                </div>
                 <div className="preparation-time">
-                  ⏱️ {product.preparationTime || 15} min
+                  ⏱️ {Number(product?.preparationTime || 15)} min
                 </div>
               </div>
-              
+
               <div className="product-ingredients">
                 <strong>Ingredientes:</strong>
                 <div className="ingredients-list">
-                  {product.ingredients.map((ingredient, index) => (
-                    <span key={index} className="ingredient-tag">{ingredient}</span>
+                  {(product?.ingredients || []).map((ingredient, index) => (
+                    <span key={index} className="ingredient-tag">
+                      {ingredient}
+                    </span>
                   ))}
                 </div>
               </div>
 
               <div className="product-actions">
-                <Button 
-                  variant="secondary" 
+                <Button
+                  variant="secondary"
                   onClick={() => handleEditProduct(product)}
                   className="edit-btn"
                 >
                   ✏️ Editar
                 </Button>
-                <Button 
-                  variant="danger" 
+                <Button
+                  variant="danger"
                   onClick={() => handleDeleteProduct(product.id)}
                   className="delete-btn"
                 >
@@ -265,6 +324,7 @@ const MenuManagement = () => {
         product={editingProduct}
         onSave={handleSaveProduct}
         onCancel={handleCancelEdit}
+        idNegocio={idNegocio}
       />
     </div>
   );
