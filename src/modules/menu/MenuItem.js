@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import Button from '../../components/common/Button';
-import CommentModal from './CommentModal';
+import React, { useState } from "react";
+import Button from "../../components/common/Button";
+import CommentModal from "./CommentModal";
 
 const MenuItem = ({ item, onSelect }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -11,8 +11,8 @@ const MenuItem = ({ item, onSelect }) => {
 
   const calculateDiscountedPrice = (originalPrice, promotion) => {
     if (!promotion) return originalPrice;
-    
-    if (promotion.discountType === 'percentage') {
+
+    if (promotion.discountType === "percentage") {
       return originalPrice * (1 - promotion.discountValue / 100);
     } else {
       return originalPrice - promotion.discountValue;
@@ -26,7 +26,10 @@ const MenuItem = ({ item, onSelect }) => {
   const handleModalConfirm = (itemWithComments) => {
     // Si hay promoción activa, incluir el precio con descuento
     if (activePromotion) {
-      const discountedPrice = calculateDiscountedPrice(item.price, activePromotion);
+      const discountedPrice = calculateDiscountedPrice(
+        item.price,
+        activePromotion
+      );
       itemWithComments.originalPrice = item.price;
       itemWithComments.price = discountedPrice;
       itemWithComments.promotion = activePromotion;
@@ -36,7 +39,11 @@ const MenuItem = ({ item, onSelect }) => {
 
   return (
     <>
-      <div className={`menu-item ${hasPromotion ? 'has-promotion premium-promotion' : ''}`}>
+      <div
+        className={`menu-item ${
+          hasPromotion ? "has-promotion premium-promotion" : ""
+        }`}
+      >
         {hasPromotion ? (
           // Diseño especial para productos promocionados
           <>
@@ -66,13 +73,17 @@ const MenuItem = ({ item, onSelect }) => {
 
             {/* Imagen con overlay de promoción */}
             <div className="promotion-image-container">
-              <img 
-                src={item.image} 
-                alt={item.name} 
+              <img
+                src={item.image}
+                alt={item.name}
                 className="menu-item-image promotion-image"
                 onError={(e) => {
-                  console.error(`Error loading image for ${item.name}:`, e.target.src);
-                  e.target.src = 'https://via.placeholder.com/300x200/f8f9fa/6c757d?text=Imagen+No+Disponible';
+                  console.error(
+                    `Error loading image for ${item.name}:`,
+                    e.target.src
+                  );
+                  e.target.src =
+                    "https://via.placeholder.com/300x200/f8f9fa/6c757d?text=Imagen+No+Disponible";
                 }}
                 onLoad={() => {
                   console.log(`Image loaded successfully for ${item.name}`);
@@ -82,7 +93,7 @@ const MenuItem = ({ item, onSelect }) => {
                 <div className="promotion-flash">¡OFERTA ESPECIAL!</div>
               </div>
             </div>
-            
+
             {/* Contenido premium para promociones */}
             <div className="menu-item-content promotion-content">
               <div className="promotion-title-section">
@@ -92,21 +103,29 @@ const MenuItem = ({ item, onSelect }) => {
                   <span>{activePromotion.name}</span>
                 </div>
               </div>
-              
-              <p className="menu-item-description promotion-description">{item.description}</p>
-              
+
+              <p className="menu-item-description promotion-description">
+                {item.description}
+              </p>
+
               {/* Sección de precios premium */}
               <div className="promotion-pricing-section">
                 <div className="pricing-container">
                   <div className="price-comparison">
                     <div className="original-price-section">
                       <span className="price-label">Precio regular:</span>
-                      <span className="original-price">₡{item.price.toLocaleString('es-CR')}</span>
+                      <span className="original-price">
+                        ₡{item.price.toLocaleString("es-CR")}
+                      </span>
                     </div>
                     <div className="discounted-price-section">
                       <span className="price-label">¡Tu precio especial!</span>
                       <span className="discounted-price">
-                        ₡{calculateDiscountedPrice(item.price, activePromotion).toLocaleString('es-CR')}
+                        ₡
+                        {calculateDiscountedPrice(
+                          item.price,
+                          activePromotion
+                        ).toLocaleString("es-CR")}
                       </span>
                     </div>
                   </div>
@@ -114,7 +133,12 @@ const MenuItem = ({ item, onSelect }) => {
                     <div className="savings-badge">
                       <span className="savings-icon">💰</span>
                       <span className="savings-text">
-                        ¡AHORRAS ₡{(item.price - calculateDiscountedPrice(item.price, activePromotion)).toLocaleString('es-CR')}!
+                        ¡AHORRAS ₡
+                        {(
+                          item.price -
+                          calculateDiscountedPrice(item.price, activePromotion)
+                        ).toLocaleString("es-CR")}
+                        !
                       </span>
                     </div>
                   </div>
@@ -125,14 +149,41 @@ const MenuItem = ({ item, onSelect }) => {
               <div className="promotion-details">
                 <div className="promotion-description-card">
                   <span className="promotion-icon">🎉</span>
-                  <span className="promotion-text">{activePromotion.description}</span>
+                  <span className="promotion-text">
+                    {activePromotion.description}
+                  </span>
                 </div>
               </div>
-              
+
+              {/* Adicionales visibles en productos promocionados */}
+              {Array.isArray(item.adicionales) &&
+                item.adicionales.length > 0 && (
+                  <div className="menu-item-extras" style={{ marginTop: 8 }}>
+                    <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                      Adicionales:
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>
+                      {item.adicionales.slice(0, 5).map((a, idx) => (
+                        <li key={idx} style={{ fontSize: 13, color: "#333" }}>
+                          {a.nombre || a}
+                          {a.precio
+                            ? ` (+₡${Number(a.precio).toLocaleString("es-CR")})`
+                            : ""}
+                        </li>
+                      ))}
+                      {item.adicionales.length > 5 && (
+                        <li style={{ fontSize: 12, color: "#555" }}>
+                          y más...
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+
               {/* Botón de acción premium */}
               <div className="promotion-action">
-                <Button 
-                  variant="select" 
+                <Button
+                  variant="select"
                   onClick={handleSelectClick}
                   className="promotion-button"
                 >
@@ -146,30 +197,57 @@ const MenuItem = ({ item, onSelect }) => {
         ) : (
           // Diseño normal para productos sin promoción
           <>
-            <img 
-              src={item.image} 
-              alt={item.name} 
+            <img
+              src={item.image}
+              alt={item.name}
               className="menu-item-image"
               onError={(e) => {
-                console.error(`Error loading image for ${item.name}:`, e.target.src);
-                e.target.src = 'https://via.placeholder.com/300x200/f8f9fa/6c757d?text=Imagen+No+Disponible';
+                console.error(
+                  `Error loading image for ${item.name}:`,
+                  e.target.src
+                );
+                e.target.src =
+                  "https://via.placeholder.com/300x200/f8f9fa/6c757d?text=Imagen+No+Disponible";
               }}
               onLoad={() => {
                 console.log(`Image loaded successfully for ${item.name}`);
               }}
             />
-            
+
             <div className="menu-item-content">
               <h3 className="menu-item-name">{item.name}</h3>
               <p className="menu-item-description">{item.description}</p>
+              {/* Mostrar Adicionales si existen */}
+              {Array.isArray(item.adicionales) &&
+                item.adicionales.length > 0 && (
+                  <div className="menu-item-extras">
+                    <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                      Adicionales:
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>
+                      {item.adicionales.slice(0, 5).map((a, idx) => (
+                        <li key={idx} style={{ fontSize: 13, color: "#555" }}>
+                          {a.nombre || a}
+                          {a.precio
+                            ? ` (+₡${Number(a.precio).toLocaleString("es-CR")})`
+                            : ""}
+                        </li>
+                      ))}
+                      {item.adicionales.length > 5 && (
+                        <li style={{ fontSize: 12, color: "#777" }}>
+                          y más...
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
               <div className="menu-item-pricing">
-                <div className="menu-item-price">₡{item.price.toLocaleString('es-CR')}</div>
+                <div className="menu-item-price">
+                  ₡{item.price.toLocaleString("es-CR")}
+                </div>
               </div>
-              
-              <Button 
-                variant="select" 
-                onClick={handleSelectClick}
-              >
+
+              <Button variant="select" onClick={handleSelectClick}>
                 Seleccionar
               </Button>
             </div>
@@ -188,4 +266,3 @@ const MenuItem = ({ item, onSelect }) => {
 };
 
 export default MenuItem;
-

@@ -265,7 +265,9 @@
 
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  /* Evita que un único item se expanda a todo el ancho */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 400px));
+  justify-content: center; /* centra las columnas cuando hay espacio sobrante */
   gap: 30px;
   margin-bottom: 40px;
 }
