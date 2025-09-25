@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Button from "../../components/common/Button";
 import { ImageUploader } from "../../components/common";
 import { getImageByDishName } from "../menu/menuImages";
+import productosService from "../../services/productosService";
 import imageService from "../../services/imageService";
 import "./ProductModal.css";
 import RouteHandler from "../../utils/routeHandler";
@@ -107,18 +108,25 @@ const ProductModal = ({
         name: product.name || "",
         description: product.description || "",
         price: product.price || "",
-        category: product.category || "comidas-rapidas",
+        // En productos normalizados viene como categorySlug
+        category: product.categorySlug || product.category || "comidas-rapidas",
         ingredients: product.ingredients || [""],
         image: isCustomImageUrl ? "custom" : product.image || "Filete de Res",
         preparationTime: product.preparationTime || 15,
-        estado: product.estado || "A",
+        // Derivar estado desde bandera isVisible si no viene crudo
+        estado: product.estado || (product.isVisible === false ? "I" : "A"),
         esPlatoDelDia: Boolean(product.esPlatoDelDia) || false,
         esPromo: Boolean(product.esPromo) || false,
       });
 
-      // Pre-cargar adicionales si vienen del producto (array de IDs)
+      // Pre-cargar adicionales: el normalizador entrega objetos {id,nombre,precio}
       if (Array.isArray(product.adicionales)) {
-        setAdicionalesSelected(product.adicionales);
+        const ids = product.adicionales
+          .map((a) =>
+            a && (a.id_adicional || a.id) ? a.id_adicional || a.id : null
+          )
+          .filter((v) => v !== null && v !== undefined);
+        setAdicionalesSelected(ids);
       } else {
         setAdicionalesSelected([]);
       }
@@ -290,25 +298,6 @@ const ProductModal = ({
 
     setSubmitting(true);
     try {
-      const fd = new FormData();
-
-      // Imagen
-      if (imageType === "custom" && customImageFile) {
-        fd.append("imagen", customImageFile);
-      } else {
-        const url = getImageByDishName(formData.image);
-        const resp = await fetch(url);
-        const blob = await resp.blob();
-        const filename = `${(formData.name || "producto").replace(
-          /\s+/g,
-          "_"
-        )}.${(blob.type && blob.type.split("/")[1]) || "jpg"}`;
-        const fileFromBlob = new File([blob], filename, {
-          type: blob.type || "image/jpeg",
-        });
-        fd.append("imagen", fileFromBlob);
-      }
-
       // Campos requeridos: id_negocio desde URL/prop, id_categoria desde categoría seleccionada
       const negocioId = idNegocioProp ?? RouteHandler.getBusinessIdFromURL();
       if (!negocioId || Number(negocioId) <= 0) {
@@ -318,38 +307,72 @@ const ProductModal = ({
       if (!categoriaId) {
         throw new Error("Categoría seleccionada no válida (id no mapeado)");
       }
-
-      fd.append("id_negocio", String(negocioId));
-      fd.append("id_categoria", String(categoriaId));
-      fd.append("nombre_producto", formData.name);
-      fd.append("precio", String(parseFloat(formData.price)));
-
-      // Opcionales
-      if (formData.description) fd.append("descripcion", formData.description);
-      fd.append("es_plato_del_dia", String(Boolean(formData.esPlatoDelDia)));
-      fd.append("es_promo", String(Boolean(formData.esPromo)));
-      fd.append("estado", formData.estado || "A");
-
-      // Adicionales (JSON texto)
-      if (adicionalesSelected.length > 0) {
-        const adicionalesPayload = adicionalesSelected.map((id) => ({
-          id_adicional: id,
-        }));
-        fd.append("adicionales", JSON.stringify(adicionalesPayload));
+      if (product && product.id) {
+        // UPDATE sin modificar imagen según requerimiento
+        const payload = {
+          id_producto: product.id,
+          id_negocio: Number(negocioId),
+          id_categoria: categoriaId,
+          nombre_producto: formData.name,
+          descripcion: formData.description || "",
+          precio: parseFloat(formData.price),
+          es_plato_del_dia: false,
+          es_promo: false,
+          estado: formData.estado || "A",
+          adicionales: adicionalesSelected.map((id) => ({
+            id_adicional: id,
+            costo_extra: 0, // Si no se gestiona costo diferenciado en UI, enviar 0
+          })),
+        };
+        const result = await productosService.actualizarProducto(payload);
+        setSubmitSuccess("Producto actualizado correctamente");
+        if (typeof onSave === "function")
+          onSave({ success: true, data: result.data });
+      } else {
+        // CREACIÓN (flujo existente con imagen)
+        const fd = new FormData();
+        if (imageType === "custom" && customImageFile) {
+          fd.append("imagen", customImageFile);
+        } else {
+          const url = getImageByDishName(formData.image);
+          const resp = await fetch(url);
+          const blob = await resp.blob();
+          const filename = `${(formData.name || "producto").replace(
+            /\s+/g,
+            "_"
+          )}.${(blob.type && blob.type.split("/")[1]) || "jpg"}`;
+          const fileFromBlob = new File([blob], filename, {
+            type: blob.type || "image/jpeg",
+          });
+          fd.append("imagen", fileFromBlob);
+        }
+        fd.append("id_negocio", String(negocioId));
+        fd.append("id_categoria", String(categoriaId));
+        fd.append("nombre_producto", formData.name);
+        fd.append("precio", String(parseFloat(formData.price)));
+        if (formData.description)
+          fd.append("descripcion", formData.description);
+        fd.append("es_plato_del_dia", "false");
+        fd.append("es_promo", "false");
+        fd.append("estado", formData.estado || "A");
+        if (adicionalesSelected.length > 0) {
+          const adicionalesPayload = adicionalesSelected.map((id) => ({
+            id_adicional: id,
+          }));
+          fd.append("adicionales", JSON.stringify(adicionalesPayload));
+        }
+        const res = await fetch("/productos/upload", {
+          method: "POST",
+          body: fd,
+        });
+        if (!res.ok) {
+          const msg = await res.text();
+          throw new Error(msg || "Error al registrar el producto");
+        }
+        const data = await res.json().catch(() => ({}));
+        setSubmitSuccess("Producto registrado correctamente");
+        if (typeof onSave === "function") onSave({ success: true, data });
       }
-
-      const res = await fetch("/productos/upload", {
-        method: "POST",
-        body: fd,
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || "Error al registrar el producto");
-      }
-      const data = await res.json().catch(() => ({}));
-      setSubmitSuccess("Producto registrado correctamente");
-      if (typeof onSave === "function") onSave({ success: true, data });
     } catch (err) {
       console.error(err);
       setSubmitError(err.message || "Error al registrar el producto");

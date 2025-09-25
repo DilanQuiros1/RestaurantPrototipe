@@ -1,21 +1,58 @@
 import React, { useState, useEffect } from "react";
 import Button from "../../components/common/Button";
 import ProductModal from "./ProductModal";
-import menuService from "../../services/menuService";
+import productosService from "../../services/productosService";
 import imageService from "../../services/imageService";
 import { getImageByDishName } from "../menu/menuImages";
+import RouteHandler from "../../utils/routeHandler";
 import "./MenuManagement.css";
 
 const MenuManagement = ({ idNegocio }) => {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Cargar productos desde el servicio
+  // Cargar productos desde backend
   useEffect(() => {
-    loadProducts();
-  }, []);
+    const negocioId = idNegocio ?? RouteHandler.getBusinessIdFromURL();
+    if (!negocioId) {
+      setError("No se encontró id_negocio en la URL. Inicie sesión primero.");
+      setLoading(false);
+      return;
+    }
+    const load = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const { categoriesList, menuData } =
+          await productosService.fetchProductosPorNegocio(negocioId);
+        // Flatten products
+        const flat = Object.values(menuData).flat();
+        setProducts(flat);
+        // categoriesList ya incluye promociones / platos del día; añadimos 'all'
+        setCategories([
+          { id: "all", name: "Todos los productos" },
+          ...categoriesList,
+        ]);
+        // Ajustar categoría activa si no existe
+        setActiveCategory((prev) =>
+          prev === "all" || categoriesList.some((c) => c.id === prev)
+            ? prev
+            : "all"
+        );
+      } catch (err) {
+        console.error("Error cargando productos admin", err);
+        setError("No se pudieron cargar los productos");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [idNegocio]);
 
   // Función para obtener la imagen correcta (personalizada o predefinida)
   const getProductImage = (product) => {
@@ -23,52 +60,33 @@ const MenuManagement = ({ idNegocio }) => {
     if (!product) {
       return getImageByDishName("Filete de Res");
     }
-
-    // Si el producto usa imagen personalizada, buscar en el servicio
-    if (product.image === "custom") {
-      const savedImage = imageService.getImageByProductId(product.id);
-      if (savedImage?.data) {
-        return savedImage.data;
+    // Ruta absoluta o data/blob
+    if (typeof product.image === "string" && product.image) {
+      if (
+        product.image.startsWith("http") ||
+        product.image.startsWith("data:image") ||
+        product.image.startsWith("blob:")
+      ) {
+        return product.image;
+      }
+      if (product.image.startsWith("/")) {
+        return `http://127.0.0.1:8000${product.image}`;
       }
     }
-
-    // Si la imagen comienza con data:, blob: o http, es una imagen personalizada legacy
-    if (
-      typeof product.image === "string" &&
-      product.image &&
-      (product.image.startsWith("data:image") ||
-        product.image.startsWith("blob:") ||
-        product.image.startsWith("http"))
-    ) {
-      return product.image;
+    // Imagen personalizada local (legacy)
+    if (product.image === "custom") {
+      const savedImage = imageService.getImageByProductId(product.id);
+      if (savedImage?.data) return savedImage.data;
     }
-
-    // Si no hay nombre válido, usar una imagen por defecto
-    const dishName =
-      typeof product.image === "string" && product.image.trim()
-        ? product.image
-        : "Filete de Res";
-
-    // Servicio de imágenes predefinidas
-    return getImageByDishName(dishName);
+    return getImageByDishName("Filete de Res");
   };
-
-  const loadProducts = () => {
-    const allItems = menuService.getAllItems();
-    setProducts(allItems);
-  };
-
-  const categories = [
-    { id: "all", label: "Todos los productos", icon: "📋" },
-    { id: "comidas-rapidas", label: "Comidas Rápidas", icon: "🍔" },
-    { id: "platos-fuertes", label: "Platos Fuertes", icon: "🍽️" },
-    { id: "bebidas", label: "Bebidas", icon: "🥤" },
-  ];
-
-  const filteredProducts =
-    activeCategory === "all"
-      ? products
-      : products.filter((product) => product?.category === activeCategory);
+  const filteredProducts = products.filter((p) => {
+    if (activeCategory === "all") return true;
+    // p.categorySlug asignado por productosService
+    if (p.esPlatoDelDia && activeCategory === "platos-del-dia") return true;
+    if (p.esPromo && activeCategory === "promociones") return true;
+    return p.categorySlug === activeCategory;
+  });
 
   const handleAddProduct = () => {
     setEditingProduct(null);
@@ -81,73 +99,126 @@ const MenuManagement = ({ idNegocio }) => {
   };
 
   const handleDeleteProduct = (productId) => {
-    if (
-      window.confirm("¿Estás seguro de que quieres eliminar este producto?")
-    ) {
-      // Eliminar imagen asociada si existe
-      imageService.removeImageByProductId(productId);
-
-      // Eliminar producto
-      menuService.permanentlyDeleteItem(productId);
-      loadProducts(); // Recargar lista
+    if (!productId) return;
+    if (!window.confirm("¿Estás seguro de que quieres eliminar este producto?"))
+      return;
+    const negocioId = idNegocio ?? RouteHandler.getBusinessIdFromURL();
+    if (!negocioId) {
+      alert("No se encontró id_negocio en la URL");
+      return;
     }
+    // Optimista: quitar de la lista, guardar copia para posible rollback
+    setProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, __deleting: true } : p))
+    );
+    const previous = products;
+    setProducts((prev) => prev.filter((p) => p.id !== productId));
+    productosService
+      .eliminarProducto(negocioId, productId)
+      .then(() => {
+        // Opcional: podríamos refetch si el backend devuelve algo relevante
+      })
+      .catch((err) => {
+        console.error("Error eliminando producto", err);
+        alert("No se pudo eliminar el producto");
+        // Rollback
+        setProducts(previous);
+      });
   };
 
   const handleToggleVisibility = (productId) => {
-    const product = menuService.getItemById(productId);
-    if (product) {
-      menuService.updateItem(productId, { isVisible: !product.isVisible });
-      loadProducts(); // Recargar lista
-    }
+    const negocioId = idNegocio ?? RouteHandler.getBusinessIdFromURL();
+    if (!negocioId) return;
+    // Determinar estado actual antes de modificar
+    const current = products.find((p) => p.id === productId);
+    const nuevoEstado = current && current.isVisible ? "I" : "A";
+    // Optimista
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? {
+              ...p,
+              __prevVisible: p.isVisible,
+              isVisible: nuevoEstado === "A",
+              __updatingVisibility: true,
+            }
+          : p
+      )
+    );
+    productosService
+      .actualizarEstadoProducto(negocioId, productId, nuevoEstado)
+      .then((res) => {
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.id === productId ? { ...p, __updatingVisibility: false } : p
+          )
+        );
+      })
+      .catch((err) => {
+        console.error("Error actualizando estado", err);
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.id === productId
+              ? {
+                  ...p,
+                  isVisible: p.__prevVisible,
+                  __updatingVisibility: false,
+                  __prevVisible: undefined,
+                }
+              : p
+          )
+        );
+        alert("No se pudo actualizar el estado del producto");
+      });
   };
 
   const handleToggleAvailability = (productId) => {
-    menuService.toggleItemAvailability(productId);
-    loadProducts(); // Recargar lista
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId ? { ...p, isAvailable: !p.isAvailable } : p
+      )
+    );
   };
 
   const handleSaveProduct = (productData) => {
-    // Si viene de ProductModal tras una llamada real a la API
+    // Si ProductModal reporta éxito (creación real en backend), refrescar lista completa
     if (productData && productData.success) {
-      // Aquí podríamos recargar desde API si tuviéramos un endpoint GET.
-      // Por ahora, cerramos el modal y mantenemos el listado actual local.
+      // Forzar recarga llamando de nuevo al backend
+      const negocioId = idNegocio ?? RouteHandler.getBusinessIdFromURL();
+      if (negocioId) {
+        productosService
+          .fetchProductosPorNegocio(negocioId)
+          .then(({ categoriesList, menuData }) => {
+            setProducts(Object.values(menuData).flat());
+            setCategories((prev) => [
+              { id: "all", name: "Todos los productos" },
+              ...categoriesList,
+            ]);
+          })
+          .catch((e) =>
+            console.error("Error refrescando productos tras guardar", e)
+          );
+      }
       setIsModalOpen(false);
       setEditingProduct(null);
       return;
     }
 
-    let savedProduct;
-
     if (editingProduct) {
-      // Editar producto existente
-      savedProduct = menuService.updateItem(editingProduct.id, productData);
+      // Actualización local optimista
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === editingProduct.id ? { ...p, ...productData } : p
+        )
+      );
     } else {
-      // Agregar nuevo producto
-      savedProduct = menuService.addItem(productData);
-
-      // Si había una imagen temporal, actualizarla con el ID real del producto
-      if (productData.tempImageId && savedProduct?.id) {
-        try {
-          // Obtener la imagen temporal
-          const tempImage =
-            imageService.getAllImages()[productData.tempImageId];
-          if (tempImage) {
-            // Guardar con el ID real del producto
-            imageService.saveImage(
-              savedProduct.id,
-              tempImage.data,
-              tempImage.fileName
-            );
-            // Eliminar la imagen temporal
-            imageService.removeImageById(productData.tempImageId);
-          }
-        } catch (error) {
-          console.error("Error al actualizar imagen del producto:", error);
-        }
-      }
+      // Creación local optimista (ID temporal)
+      const tempId = `temp-${Date.now()}`;
+      setProducts((prev) => [
+        ...prev,
+        { id: tempId, isVisible: true, isAvailable: true, ...productData },
+      ]);
     }
-
-    loadProducts(); // Recargar lista
     setIsModalOpen(false);
     setEditingProduct(null);
   };
@@ -163,6 +234,22 @@ const MenuManagement = ({ idNegocio }) => {
   //     loadProducts();
   //   }
   // };
+
+  if (loading) {
+    return (
+      <div className="menu-management">
+        <p>Cargando productos...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="menu-management">
+        <p style={{ color: "red" }}>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="menu-management">
@@ -198,8 +285,8 @@ const MenuManagement = ({ idNegocio }) => {
             }`}
             onClick={() => setActiveCategory(category.id)}
           >
-            <span className="filter-icon">{category.icon}</span>
-            <span className="filter-label">{category.label}</span>
+            <span className="filter-icon">🍽️</span>
+            <span className="filter-label">{category.name}</span>
           </button>
         ))}
       </div>
@@ -208,7 +295,9 @@ const MenuManagement = ({ idNegocio }) => {
         {filteredProducts.map((product) => (
           <div
             key={product.id}
-            className={`product-card ${!product.isVisible ? "invisible" : ""}`}
+            className={`product-card ${!product.isVisible ? "invisible" : ""} ${
+              product.__deleting ? "deleting" : ""
+            }`}
           >
             <div className="product-header">
               <div className="product-image">
@@ -235,13 +324,20 @@ const MenuManagement = ({ idNegocio }) => {
                 <button
                   className={`visibility-toggle ${
                     product.isVisible ? "visible" : "hidden"
-                  }`}
-                  onClick={() => handleToggleVisibility(product.id)}
+                  } ${product.__updatingVisibility ? "loading" : ""}`}
+                  onClick={() =>
+                    !product.__updatingVisibility &&
+                    handleToggleVisibility(product.id)
+                  }
                   title={
                     product.isVisible ? "Ocultar producto" : "Mostrar producto"
                   }
                 >
-                  {product.isVisible ? "👁️" : "🙈"}
+                  {product.__updatingVisibility
+                    ? "⏳"
+                    : product.isVisible
+                    ? "👁️"
+                    : "🙈"}
                 </button>
               </div>
             </div>
@@ -269,23 +365,32 @@ const MenuManagement = ({ idNegocio }) => {
               </p>
               <div className="product-info">
                 <div className="product-price">
-                  ${Number(product?.price || 0).toFixed(2)}
+                  ₡{Number(product?.price || 0).toLocaleString("es-CR")}
                 </div>
                 <div className="preparation-time">
                   ⏱️ {Number(product?.preparationTime || 15)} min
                 </div>
               </div>
 
-              <div className="product-ingredients">
-                <strong>Ingredientes:</strong>
-                <div className="ingredients-list">
-                  {(product?.ingredients || []).map((ingredient, index) => (
-                    <span key={index} className="ingredient-tag">
-                      {ingredient}
-                    </span>
-                  ))}
-                </div>
-              </div>
+              {Array.isArray(product?.adicionales) &&
+                product.adicionales.length > 0 && (
+                  <div className="product-ingredients">
+                    <strong>Adicionales:</strong>
+                    <div className="ingredients-list">
+                      {product.adicionales.slice(0, 6).map((a, idx) => (
+                        <span key={idx} className="ingredient-tag">
+                          {a.nombre}
+                          {a.precio
+                            ? ` (+₡${Number(a.precio).toLocaleString("es-CR")})`
+                            : ""}
+                        </span>
+                      ))}
+                      {product.adicionales.length > 6 && (
+                        <span className="ingredient-tag">y más...</span>
+                      )}
+                    </div>
+                  </div>
+                )}
 
               <div className="product-actions">
                 <Button
@@ -297,10 +402,13 @@ const MenuManagement = ({ idNegocio }) => {
                 </Button>
                 <Button
                   variant="danger"
-                  onClick={() => handleDeleteProduct(product.id)}
+                  onClick={() =>
+                    !product.__deleting && handleDeleteProduct(product.id)
+                  }
                   className="delete-btn"
+                  disabled={product.__deleting}
                 >
-                  🗑️ Eliminar
+                  {product.__deleting ? "Eliminando..." : "🗑️ Eliminar"}
                 </Button>
               </div>
             </div>

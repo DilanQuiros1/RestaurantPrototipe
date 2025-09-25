@@ -71,12 +71,23 @@ const Menu = ({ onAdminAccess, menuType = "internal" }) => {
       try {
         const { categoriesList, menuData } =
           await productosService.fetchProductosPorNegocio(idNegocio);
-        setMenuData(menuData);
-        setCategories(categoriesList);
+        // Filtrar solo productos visibles (estado 'A')
+        const filteredMenuData = Object.fromEntries(
+          Object.entries(menuData).map(([cat, items]) => [
+            cat,
+            items.filter((it) => it.isVisible !== false),
+          ])
+        );
+        // Remover categorías vacías tras filtrado
+        const filteredCategories = categoriesList.filter(
+          (c) => (filteredMenuData[c.id] || []).length > 0
+        );
+        setMenuData(filteredMenuData);
+        setCategories(filteredCategories);
         // Ajustar categoría activa si no existe
-        const firstCat = categoriesList[0]?.id;
+        const firstCat = filteredCategories[0]?.id;
         setActiveCategory((prev) =>
-          !menuData[prev] && firstCat ? firstCat : prev
+          !filteredMenuData[prev] && firstCat ? firstCat : prev
         );
       } catch (err) {
         console.error("Error cargando productos del backend", err);
